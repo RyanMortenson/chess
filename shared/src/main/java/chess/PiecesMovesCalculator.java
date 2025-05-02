@@ -15,11 +15,11 @@ public class PiecesMovesCalculator {
                 return rookMoves(board, position, piece);
             case QUEEN:
                 return queenMoves(board, position, piece);
+            case KING:
+                return kingMoves(board, position, piece);
             /*
             case KNIGHT:
                 return knightMoves(board, position, piece);
-            case KING:
-                return kingMoves(board, position, piece);
             case PAWN:
                 return pawnMoves(board, position, piece);
                 */
@@ -115,5 +115,26 @@ public class PiecesMovesCalculator {
         return moves;
     }
 
-    private static java.util.Collection<ChessMove> kingMoves()
+    private static java.util.Collection<ChessMove> kingMoves(ChessBoard board,
+                                                             ChessPosition position,
+                                                             ChessPiece king) {
+        java.util.List<ChessMove> moves = new java.util.ArrayList<>();
+        int[][] steps = {{1,0}, {1,1}, {0,1}, {-1,1}, {-1,0}, {-1,-1}, {0,-1}, {1,-1}};
+        for (int[] step : steps) {
+            int r = position.getRow() + step[0];
+            int c = position.getColumn() + step[1];
+            if (r>=1 && r<=8 && c>= 1 && c<= 8) {
+                ChessPosition target = new ChessPosition(r, c);
+                ChessPiece occupant = board.getPiece(target);
+                if (occupant == null) {
+                    moves.add(new ChessMove(position, target, null));
+                } else {
+                    if (occupant.getTeamColor() != king.getTeamColor()) {
+                        moves.add(new ChessMove(position, target, null));
+                    }
+                }
+            }
+        }
+        return moves;
+    }
 }
