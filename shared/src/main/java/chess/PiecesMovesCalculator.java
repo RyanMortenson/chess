@@ -17,12 +17,10 @@ public class PiecesMovesCalculator {
                 return queenMoves(board, position, piece);
             case KING:
                 return kingMoves(board, position, piece);
-            /*
             case KNIGHT:
                 return knightMoves(board, position, piece);
-            case PAWN:
-                return pawnMoves(board, position, piece);
-                */
+            //case PAWN:
+            //    return pawnMoves(board, position, piece);
 
             default:
                 return java.util.Collections.emptyList();
@@ -130,6 +128,32 @@ public class PiecesMovesCalculator {
                     moves.add(new ChessMove(position, target, null));
                 } else {
                     if (occupant.getTeamColor() != king.getTeamColor()) {
+                        moves.add(new ChessMove(position, target, null));
+                    }
+                }
+            }
+        }
+        return moves;
+    }
+
+    private static java.util.Collection<ChessMove> knightMoves(ChessBoard board,
+                                                               ChessPosition position,
+                                                               ChessPiece knight) {
+        java.util.List<ChessMove> moves = new java.util.ArrayList<>();
+        int[][] jumps = {{2, 1}, {1, 2},
+                {-1, 2}, {-2, 1},
+                {-1, -2}, {-2, -1},
+                {1, -2}, {2, -1}};
+        for (int[] jump : jumps) {
+            int r = position.getRow() + jump[0];
+            int c = position.getColumn() + jump[1];
+            if (r>=1 && r<=8 && c>=1 && c<= 8) {
+                ChessPosition target = new ChessPosition(r, c);
+                ChessPiece occupant = board.getPiece(target);
+                if (occupant == null) {
+                    moves.add(new ChessMove(position, target, null));
+                } else {
+                    if (occupant.getTeamColor() != knight.getTeamColor()) {
                         moves.add(new ChessMove(position, target, null));
                     }
                 }
