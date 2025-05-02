@@ -19,8 +19,8 @@ public class PiecesMovesCalculator {
                 return kingMoves(board, position, piece);
             case KNIGHT:
                 return knightMoves(board, position, piece);
-            //case PAWN:
-            //    return pawnMoves(board, position, piece);
+            case PAWN:
+                return pawnMoves(board, position, piece);
 
             default:
                 return java.util.Collections.emptyList();
@@ -156,6 +156,56 @@ public class PiecesMovesCalculator {
                     if (occupant.getTeamColor() != knight.getTeamColor()) {
                         moves.add(new ChessMove(position, target, null));
                     }
+                }
+            }
+        }
+        return moves;
+    }
+
+    private static java.util.Collection<ChessMove> pawnMoves(ChessBoard board,
+                                                             ChessPosition position,
+                                                             ChessPiece pawn) {
+        java.util.List<ChessMove> moves = new java.util.ArrayList<>();
+        int old_r = position.getRow(), r, r2=0, c = position.getColumn();
+        boolean isWhite = (pawn.getTeamColor() == ChessGame.TeamColor.WHITE);
+        int[] attack_left = {1, -1};
+        int[] attack_right = {1, 1};
+
+        //std_move (white)
+        if (isWhite) {
+            if (old_r == 2) {
+                r = old_r + 1;
+                r2 = old_r + 2;
+            } else {
+                r = old_r + 1;
+            }
+        } else // std_move (black)
+        {
+            if (old_r == 7) {
+                r = old_r - 1;
+                r2 = old_r - 2;
+            } else {
+                r = old_r - 1;
+            }
+        }
+
+        if (r>=1 && r<=8 && c>=1 && c<=8) {
+            //Double move from start
+            if (r2 != 0) {
+                ChessPosition target2 = new ChessPosition(r2, c);
+                ChessPiece occupant2 = board.getPiece(target2);
+                if (occupant2 == null){
+                    moves.add(new ChessMove(position, target2, null));
+                }
+            }
+            //Single move
+            ChessPosition target = new ChessPosition(r, c);
+            ChessPiece occupant = board.getPiece(target);
+            if(occupant == null) {
+                if (r == 8) {
+                    moves.add(new ChessMove(position, target, ChessPiece.PieceType.QUEEN));
+                } else {
+                    moves.add(new ChessMove(position, target, null));
                 }
             }
         }
