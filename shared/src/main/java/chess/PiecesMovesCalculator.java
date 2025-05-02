@@ -28,7 +28,6 @@ public class PiecesMovesCalculator {
                 return knightMoves(board, position, piece);
             case PAWN:
                 return pawnMoves(board, position, piece);
-
             default:
                 return java.util.Collections.emptyList();
         }
