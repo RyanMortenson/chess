@@ -59,6 +59,25 @@ public class PiecesMovesCalculator {
         return moves;
     }
 
+    private static java.util.Collection<ChessMove> jumpingPiece(ChessBoard board,
+                                                                ChessPosition position,
+                                                                ChessPiece piece,
+                                                                int[][] jumps) {
+        java.util.List<ChessMove> moves = new java.util.ArrayList<>();
+        for (int[] jump : jumps) {
+            int r = position.getRow() + jump[0];
+            int c = position.getColumn() + jump[1];
+            if (onBoard(r,c)) {
+                ChessPosition target = new ChessPosition(r,c);
+                ChessPiece occupant = board.getPiece(target);
+                if (occupant == null || occupant.getTeamColor() != piece.getTeamColor()) {
+                    moves.add(new ChessMove(position, target, null));
+                }
+            }
+        }
+        return moves;
+    }
+
     private static java.util.Collection<ChessMove> bishopMoves(ChessBoard board,
                                                                ChessPosition position,
                                                                ChessPiece bishop) {
@@ -87,50 +106,18 @@ public class PiecesMovesCalculator {
     private static java.util.Collection<ChessMove> kingMoves(ChessBoard board,
                                                              ChessPosition position,
                                                              ChessPiece king) {
-        java.util.List<ChessMove> moves = new java.util.ArrayList<>();
-        int[][] steps = {{1, 0}, {1, 1}, {0, 1}, {-1, 1}, {-1, 0}, {-1, -1}, {0, -1}, {1, -1}};
-        for (int[] step : steps) {
-            int r = position.getRow() + step[0];
-            int c = position.getColumn() + step[1];
-            if (onBoard(r,c)) {
-                ChessPosition target = new ChessPosition(r, c);
-                ChessPiece occupant = board.getPiece(target);
-                if (occupant == null) {
-                    moves.add(new ChessMove(position, target, null));
-                } else {
-                    if (occupant.getTeamColor() != king.getTeamColor()) {
-                        moves.add(new ChessMove(position, target, null));
-                    }
-                }
-            }
-        }
-        return moves;
+        int[][] jumps = {{1, 0}, {1, 1}, {0, 1}, {-1, 1}, {-1, 0}, {-1, -1}, {0, -1}, {1, -1}};
+        return jumpingPiece(board, position, king, jumps);
     }
 
     private static java.util.Collection<ChessMove> knightMoves(ChessBoard board,
                                                                ChessPosition position,
                                                                ChessPiece knight) {
-        java.util.List<ChessMove> moves = new java.util.ArrayList<>();
         int[][] jumps = {{2, 1}, {1, 2},
                 {-1, 2}, {-2, 1},
                 {-1, -2}, {-2, -1},
                 {1, -2}, {2, -1}};
-        for (int[] jump : jumps) {
-            int r = position.getRow() + jump[0];
-            int c = position.getColumn() + jump[1];
-            if (onBoard(r,c)) {
-                ChessPosition target = new ChessPosition(r, c);
-                ChessPiece occupant = board.getPiece(target);
-                if (occupant == null) {
-                    moves.add(new ChessMove(position, target, null));
-                } else {
-                    if (occupant.getTeamColor() != knight.getTeamColor()) {
-                        moves.add(new ChessMove(position, target, null));
-                    }
-                }
-            }
-        }
-        return moves;
+        return jumpingPiece(board, position, knight, jumps);
     }
 
     private static java.util.Collection<ChessMove> pawnMoves(ChessBoard board,
