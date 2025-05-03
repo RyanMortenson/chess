@@ -33,90 +33,55 @@ public class PiecesMovesCalculator {
         }
     }
 
-    private static java.util.Collection<ChessMove> bishopMoves(ChessBoard board,
-                                                               ChessPosition position,
-                                                               ChessPiece bishop) {
+    private static java.util.Collection<ChessMove> slidingPiece(ChessBoard board,
+                                                                ChessPosition position,
+                                                                ChessPiece piece,
+                                                                int[][] directions) {
         java.util.List<ChessMove> moves = new java.util.ArrayList<>();
-        int[][] directions = {
-                {1, 1}, {1, -1}, {-1, 1}, {-1, -1}
-        };
-
         for (int[] dir : directions) {
             int r = position.getRow() + dir[0];
             int c = position.getColumn() + dir[1];
             while (onBoard(r,c)) {
-                ChessPosition target = new ChessPosition(r, c);
+                ChessPosition target = new ChessPosition(r,c);
                 ChessPiece occupant = board.getPiece(target);
-
                 if (occupant == null) {
                     moves.add(new ChessMove(position, target, null));
                 } else {
-                    if (occupant.getTeamColor() != bishop.getTeamColor()) {
+                    if (occupant.getTeamColor() != piece.getTeamColor()) {
                         moves.add(new ChessMove(position, target, null));
                     }
                     break;
                 }
-
                 r += dir[0];
                 c += dir[1];
             }
         }
         return moves;
+    }
+
+    private static java.util.Collection<ChessMove> bishopMoves(ChessBoard board,
+                                                               ChessPosition position,
+                                                               ChessPiece bishop) {
+        int[][] directions = {
+                {1, 1}, {1, -1}, {-1, 1}, {-1, -1}
+        };
+        return slidingPiece(board,position, bishop, directions);
     }
 
     private static java.util.Collection<ChessMove> rookMoves(ChessBoard board,
                                                              ChessPosition position,
                                                              ChessPiece rook) {
-        java.util.List<ChessMove> moves = new java.util.ArrayList<>();
         int[][] directions = {
                 {1, 0}, {-1, 0}, {0, 1}, {0, -1}
         };
-        for (int[] dir : directions) {
-            int r = position.getRow() + dir[0];
-            int c = position.getColumn() + dir[1];
-            while (onBoard(r,c)) {
-                ChessPosition target = new ChessPosition(r, c);
-                ChessPiece occupant = board.getPiece(target);
-
-                if (occupant == null) {
-                    moves.add(new ChessMove(position, target, null));
-                } else {
-                    if (occupant.getTeamColor() != rook.getTeamColor()) {
-                        moves.add(new ChessMove(position, target, null));
-                    }
-                    break;
-                }
-                r += dir[0];
-                c += dir[1];
-            }
-        }
-        return moves;
+        return slidingPiece(board, position, rook, directions);
     }
 
     private static java.util.Collection<ChessMove> queenMoves(ChessBoard board,
                                                               ChessPosition position,
                                                               ChessPiece queen) {
-        java.util.List<ChessMove> moves = new java.util.ArrayList<>();
         int[][] directions = {{1, 0}, {1, 1}, {0, 1}, {-1, 1}, {-1, 0}, {-1, -1}, {0, -1}, {1, -1}};
-        for (int[] dir : directions) {
-            int r = position.getRow() + dir[0];
-            int c = position.getColumn() + dir[1];
-            while (onBoard(r,c)) {
-                ChessPosition target = new ChessPosition(r, c);
-                ChessPiece occupant = board.getPiece(target);
-                if (occupant == null) {
-                    moves.add(new ChessMove(position, target, null));
-                } else {
-                    if (occupant.getTeamColor() != queen.getTeamColor()) {
-                        moves.add(new ChessMove(position, target, null));
-                    }
-                    break;
-                }
-                r += dir[0];
-                c += dir[1];
-            }
-        }
-        return moves;
+        return slidingPiece(board, position, queen, directions);
     }
 
     private static java.util.Collection<ChessMove> kingMoves(ChessBoard board,
