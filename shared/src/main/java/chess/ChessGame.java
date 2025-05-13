@@ -1,6 +1,6 @@
 package chess;
 
-import java.util.Collection;
+import java.util.*;
 
 /**
  * For a class that can manage a chess game, making moves on a board
@@ -12,6 +12,7 @@ public class ChessGame {
 
     private ChessBoard board;
     private TeamColor turn;
+
     public ChessGame() {
         board = new ChessBoard(); //set a new chessboard
         board.resetBoard();       //reset that chessboard
@@ -56,6 +57,17 @@ public class ChessGame {
         }
         if (piece.getTeamColor() != turn)
             return Collections.emptyList();
+
+        Collection<ChessMove> raw = piece.pieceMoves(board, startPosition);
+        List<ChessMove> legal = new ArrayList<>();
+        for (ChessMove move : raw) {
+            ChessBoard copy = cloneBoard(board);
+            makeMoveOnBoard(copy, move);
+            if (!isInCheck(copy, turn)) {
+                legal.add(move);
+            }
+        }
+        return legal;
     }
 
     /**
@@ -65,7 +77,12 @@ public class ChessGame {
      * @throws InvalidMoveException if move is invalid
      */
     public void makeMove(ChessMove move) throws InvalidMoveException {
-
+        Collection<ChessMove> moves = validMoves(move.getStartPosition());
+        if (moves == null || !moves.contains(move)) {
+            throw new InvalidMoveException("Invalid move: " + move);
+        }
+        makeMoveOnBoard(board, move);
+        turn = (turn == TeamColor.WHITE ? TeamColor.BLACK : TeamColor.WHITE);
     }
 
     /**
@@ -75,7 +92,7 @@ public class ChessGame {
      * @return True if the specified team is in check
      */
     public boolean isInCheck(TeamColor teamColor) {
-        throw new RuntimeException("Not implemented");
+        return isInCheck(board, teamColor);
     }
 
     /**
