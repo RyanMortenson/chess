@@ -132,8 +132,8 @@ public class ChessGame {
         if (isInCheck(teamColor)) {
             return false;
         }
-        for (int r=1; r<=8; r++) {
-            for (int c=1; c<=8; c++) {
+        for (int r = 1; r <= 8; r++) {
+            for (int c = 1; c <= 8; c++) {
                 ChessPosition pos = new ChessPosition(r, c);
                 ChessPiece p = board.getPiece(pos);
                 if (p != null && p.getTeamColor() == teamColor) {
@@ -164,17 +164,16 @@ public class ChessGame {
     public ChessBoard getBoard() {
         return board;
     }
-}
 
 
     // private helpers
 
-    private static ChessBoard cloneBoard(ChessBoard src) {
+    private static ChessBoard cloneBoard(ChessBoard board) {
         ChessBoard copy = new ChessBoard();
-        for (int r=1; r<-8; r++) {
-            for (int c=1; c<=8; c++) {
-                ChessPosition pos = new ChessPosition(r,c);
-                ChessPiece p = cloneBoard().getPiece(pos);
+        for (int r = 1; r <=8; r++) {
+            for (int c = 1; c <= 8; c++) {
+                ChessPosition pos = new ChessPosition(r, c);
+                ChessPiece p = board.getPiece(pos);
                 if (p != null) {
                     copy.addPiece(pos, new ChessPiece(p.getTeamColor(), p.getPieceType()));
                 }
@@ -182,3 +181,40 @@ public class ChessGame {
         }
         return copy;
     }
+
+    private static boolean isInCheck(ChessBoard board, TeamColor team) {
+        ChessPosition kingPos = null;
+
+        for (int r=1; r<=8; r++) {
+            for (int c=1; c<=8; c++) {
+                ChessPosition pos = new ChessPosition(r, c);
+                ChessPiece p = board.getPiece(pos);
+                if (p != null && p.getTeamColor() == team && p.getPieceType() == ChessPiece.PieceType.KING) {
+                    kingPos = pos;
+                    break;
+                }
+            }
+            if (kingPos != null) break;
+        }
+        if (kingPos == null) {
+            return false;
+        }
+
+        for (int r=1; r<=8; r++) {
+            for (int c=1; c<=8; c++) {
+                ChessPosition pos = new ChessPosition(r,c);
+                ChessPiece p = board.getPiece(pos);
+                if (p != null && p.getTeamColor() != team) {
+                    for (ChessMove m : p.pieceMoves(board, pos)) {
+                        if (m.getEndPosition().equals(kingPos)) {
+                            return true;
+                        }
+                    }
+                }
+            }
+        }
+        return false;
+    }
+
+
+}
