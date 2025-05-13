@@ -182,6 +182,19 @@ public class ChessGame {
         return copy;
     }
 
+
+    private static void makeMoveOnBoard(ChessBoard board, ChessMove move) {
+        ChessPosition startPlace = move.getStartPosition();
+        ChessPosition  endPlace = move.getEndPosition();
+        ChessPiece moving = board.getPiece(startPlace);
+        if (move.getPromotionPiece() != null) {
+            board.addPiece(startPlace, new ChessPiece(moving.getTeamColor(), move.getPromotionPiece()));
+        } else {
+            board.addPiece(endPlace, moving);
+        }
+        board.addPiece(startPlace, null);
+    }
+
     private static boolean isInCheck(ChessBoard board, TeamColor team) {
         ChessPosition kingPos = null;
 
