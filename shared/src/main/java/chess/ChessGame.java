@@ -27,7 +27,7 @@ public class ChessGame {
 
     public enum TeamColor {
         WHITE,
-        BLACK;
+        BLACK
     }
 
 
@@ -53,21 +53,21 @@ public class ChessGame {
 
 
     public void makeMove(ChessMove move) throws InvalidMoveException {
-        ChessPiece currPiece = board.getPiece(move.getStartPosition());
-        if (currPiece == null) {
+        ChessPiece piece = board.getPiece(move.getStartPosition());
+        if (piece == null) {
             throw new InvalidMoveException("No valid moves.");
         }
         Collection<ChessMove> moves = validMoves(move.getStartPosition());
         boolean valid = moves.contains(move);
-        boolean turnOfTeam = currPiece.getTeamColor() == turn;
+        boolean turnOfTeam = piece.getTeamColor() == turn;
 
         if (valid && turnOfTeam) {
-            ChessPiece pieceToMove = currPiece;
+            ChessPiece pieceToMove = piece;
             if (move.getPromotionPiece() != null) {
                 pieceToMove = new ChessPiece(pieceToMove.getTeamColor(), move.getPromotionPiece());
             }
-            board.addPiece(move.getStartPosition(), null);
-            board.addPiece(move.getEndPosition(), pieceToMove);
+            board.addPiece(move.getStartPosition(), null); //Get rid of piece in current position
+            board.addPiece(move.getEndPosition(), pieceToMove);  //Place the piece in the new position
             setTeamTurn(turn == TeamColor.WHITE ? TeamColor.BLACK : TeamColor.WHITE);
         } else {
             throw new InvalidMoveException("Invalid move: " + move);
