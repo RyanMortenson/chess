@@ -36,9 +36,9 @@ public class ChessGame {
         if (piece == null) {
             return null;
         }
-        Collection<ChessMove> raw = piece.pieceMoves(board, startPosition);
-        Set<ChessMove> validMoves = new HashSet<>(raw.size());
-        for (ChessMove move : raw) {
+        Collection<ChessMove> validMovesIfBoardEmpty = piece.pieceMoves(board, startPosition);
+        Set<ChessMove> validMoves = new HashSet<>(validMovesIfBoardEmpty.size());
+        for (ChessMove move : validMovesIfBoardEmpty) {
             ChessPiece temp = board.getPiece(move.getEndPosition());
             board.addPiece(startPosition, null);
             board.addPiece(move.getEndPosition(), piece);
