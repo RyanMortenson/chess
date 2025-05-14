@@ -78,7 +78,7 @@ public class ChessGame {
     public boolean isInCheck(TeamColor teamColor) {
         ChessPosition kingPosition = null;
 
-        // Find the king
+        // Find the position of the king
         for (int r = 1; r <= 8 && kingPosition == null; r++) {
             for (int c = 1; c <= 8 && kingPosition == null; c++) {
                 ChessPosition pos = new ChessPosition(r, c);
@@ -91,7 +91,7 @@ public class ChessGame {
         if (kingPosition == null) {
             return false;
         }
-        // see if any enemy piece can attack the king
+        // Check if any of the pieces can attack the king
         for (int r = 1; r <= 8; r++) {
             for (int c = 1; c <= 8; c++) {
                 ChessPosition pos = new ChessPosition(r, c);
