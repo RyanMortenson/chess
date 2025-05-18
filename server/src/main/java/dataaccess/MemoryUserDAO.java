@@ -13,19 +13,26 @@ public class MemoryUserDAO implements UserDAO{
     }
 
     @Override
-    public UserData getUser(String username) {
-        return storage.get(username);
+    public UserData getUser(String username) throws DataAccessException {
+        UserData user = storage.get(username);
+        if (user == null){
+            throw new DataAccessException("User not found.");
+        }
+        return user;
     }
 
     @Override
-    public void createUser(String username, String password, String email) {
-        storage.put(username, new UserData(username, password, email));
+    public void createUser(UserData userData) throws DataAccessException {
+        if (storage.containsKey(userData.username())) {
+            throw new DataAccessException("Username already taken.");
+        }
+        storage.put(userData.username(), userData);
     }
 
     @Override
     public boolean authenticateUser(String username, String password) {
         UserData user = storage.get(username);
-        return user != null && user.password().equals(password);
+        return user != null && password.equals(user.password());
     }
 
     @Override
