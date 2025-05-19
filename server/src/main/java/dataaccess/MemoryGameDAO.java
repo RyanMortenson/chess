@@ -8,7 +8,7 @@ public class MemoryGameDAO implements GameDAO{
     private final Map<Integer, GameData> storage;
     private int nextID;
 
-    MemoryGameDAO() {
+    public MemoryGameDAO() {
         this.storage = new HashMap<>();
         this.nextID = 1;
     }

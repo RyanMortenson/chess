@@ -8,7 +8,7 @@ import java.util.Map;
 public class MemoryUserDAO implements UserDAO{
     private final Map<String, UserData> storage;
 
-    MemoryUserDAO() {
+    public MemoryUserDAO() {
         this.storage = new HashMap<>();
     }
 
