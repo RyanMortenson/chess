@@ -1,4 +1,3 @@
-// server/UserHandler.java
 package server;
 
 import com.google.gson.Gson;

@@ -84,7 +84,7 @@ public class UserServiceTest {
         );
     }
 
-    //
+    // logout tests
 
     @Test
     public void logoutSuccess() throws Exception {
@@ -115,7 +115,7 @@ public class UserServiceTest {
         // and logging out with a random invalid token also throws
         assertThrows(
                 DataAccessException.class,
-                () -> userService.logout(new LogoutRequest("this-token-does-not-exist"))
+                () -> userService.logout(new LogoutRequest("non-existent token"))
         );
     }
 }

@@ -34,13 +34,11 @@ public class AuthServiceTest {
 
     @Test
     public void issueToken_daoFailure() {
-        // stub DAO that always fails on addAuth
         AuthDAO failingDao = new MemoryAuthDAO() {
             @Override
             public void addAuth(AuthData auth) throws DataAccessException {
                 throw new DataAccessException("boom");
             }
-            // unused:
             @Override public AuthData getAuth(String token) throws DataAccessException { return null; }
             @Override public void removeAuth(String token) throws DataAccessException { }
         };
@@ -57,9 +55,9 @@ public class AuthServiceTest {
     @Test
     public void validateToken_success() throws DataAccessException {
         String t = UUID.randomUUID().toString();
-        authDao.addAuth(new AuthData(t, "carol"));
+        authDao.addAuth(new AuthData(t, "yeahhh"));
         AuthData auth = authService.validateToken(t);
-        assertEquals("carol", auth.username());
+        assertEquals("yeahhh", auth.username());
         assertEquals(t, auth.authToken());
     }
 

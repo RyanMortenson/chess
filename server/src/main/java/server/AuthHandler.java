@@ -1,4 +1,3 @@
-// src/main/java/server/AuthHandler.java
 package server;
 
 import com.google.gson.Gson;
