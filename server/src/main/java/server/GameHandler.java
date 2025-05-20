@@ -144,7 +144,6 @@ public class GameHandler {
         }
     }
 
-    // helper to format: { "message": "Error: <msg>" }
     private String errorBody(String msg) {
         return gson.toJson(Map.of("message", "Error: " + msg));
     }

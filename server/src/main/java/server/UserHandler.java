@@ -30,7 +30,7 @@ public class UserHandler {
     private Object handleRegister(Request req, Response res) {
         try {
             RegisterRequest r = gson.fromJson(req.body(), RegisterRequest.class);
-            // missing‐fields → 400
+            // missing fields 400
             if (r.username() == null || r.password() == null || r.email() == null) {
                 res.status(400);
                 return gson.toJson(Map.of("message", "Error: all fields required"));
@@ -40,7 +40,7 @@ public class UserHandler {
             res.status(200);
             return gson.toJson(result);
         } catch (DataAccessException e) {
-            // duplicate username → 403
+            // duplicate username 403
             res.type("application/json");
             res.status(403);
             return gson.toJson(Map.of("message", "Error: " + e.getMessage()));
