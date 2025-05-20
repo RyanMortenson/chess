@@ -100,7 +100,4 @@ public class AuthHandler {
         return gson.toJson(Collections.singletonMap("message", "Error: " + msg));
     }
 
-    private Map<String, String> error(String msg) {
-        return Collections.singletonMap("message", msg);
-    }
 }

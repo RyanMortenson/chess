@@ -51,13 +51,6 @@ public class UserService {
     }
 
 
-
-    private void validateRegistration(RegisterRequest request) {
-        if (request.username() == null || request.password() == null || request.email() == null) {
-            throw new IllegalArgumentException("All fields required");
-        }
-    }
-
     public void logout(LogoutRequest request) throws DataAccessException {
         if (request.authToken() == null) {
             throw new DataAccessException("Error: unauthorized");

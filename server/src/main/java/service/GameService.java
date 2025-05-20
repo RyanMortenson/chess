@@ -27,7 +27,7 @@ public class GameService {
                                        String authToken)
             throws UnauthorizedException, DataAccessException {
         AuthData auth = authDao.getAuth(authToken);
-        if (auth == null) throw new UnauthorizedException("invalid token");
+        if (auth == null) {throw new UnauthorizedException("invalid token");}
 
         if (request.gameName() == null) {
             throw new DataAccessException("Game name is required");

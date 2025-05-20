@@ -24,7 +24,7 @@ public class AuthServiceTest {
     // issueToken tests
 
     @Test
-    public void issueToken_success() throws DataAccessException {
+    public void issueTokenSuccess() throws DataAccessException {
         AuthData auth = authService.issueToken("bob");
         assertNotNull(auth.authToken(), "Token should not be null");
         assertEquals("bob", auth.username(), "Username should round-trip");
@@ -33,7 +33,7 @@ public class AuthServiceTest {
     }
 
     @Test
-    public void issueToken_daoFailure() {
+    public void issueTokenDaoFailure() {
         AuthDAO failingDao = new MemoryAuthDAO() {
             @Override
             public void addAuth(AuthData auth) throws DataAccessException {
@@ -53,7 +53,7 @@ public class AuthServiceTest {
     // validateToken tests
 
     @Test
-    public void validateToken_success() throws DataAccessException {
+    public void validateTokenSuccess() throws DataAccessException {
         String t = UUID.randomUUID().toString();
         authDao.addAuth(new AuthData(t, "yeahhh"));
         AuthData auth = authService.validateToken(t);
@@ -62,7 +62,7 @@ public class AuthServiceTest {
     }
 
     @Test
-    public void validateToken_nullOrMissing() {
+    public void validateTokenNullOrMissing() {
         // for null token
         assertThrows(
                 DataAccessException.class,
@@ -80,7 +80,7 @@ public class AuthServiceTest {
     // revokeToken tests
 
     @Test
-    public void revokeToken_success() throws DataAccessException {
+    public void revokeTokenSuccess() throws DataAccessException {
         String t = UUID.randomUUID().toString();
         authDao.addAuth(new AuthData(t, "dave"));
         authService.revokeToken(t);
@@ -93,7 +93,7 @@ public class AuthServiceTest {
     }
 
     @Test
-    public void revokeToken_nullOrMissing() {
+    public void revokeTokenNullOrMissing() {
         // null token
         assertThrows(
                 DataAccessException.class,

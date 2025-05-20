@@ -32,7 +32,7 @@ public class GameServiceTest {
     // createGame tests
 
     @Test
-    public void createGame_success() throws Exception {
+    public void createGameSuccess() throws Exception {
         CreateGameResult res = gameService.createGame(
                 new CreateGameRequest("TestGame", validToken),
                 validToken
@@ -46,7 +46,7 @@ public class GameServiceTest {
     }
 
     @Test
-    public void createGame_unauthorized() {
+    public void createGameUnauthorized() {
         assertThrows(
                 DataAccessException.class,
                 () -> gameService.createGame(
@@ -59,7 +59,7 @@ public class GameServiceTest {
     // listGames tets
 
     @Test
-    public void listGames_success() throws Exception {
+    public void listGamesSuccess() throws Exception {
         gameDao.createGame(new GameData(0, null, null, "G1", null));
 
         ListGamesResult list = gameService.listGames(validToken);
@@ -67,7 +67,7 @@ public class GameServiceTest {
     }
 
     @Test
-    public void listGames_unauthorized() {
+    public void listGamesUnauthorized() {
         assertThrows(
                 DataAccessException.class,
                 () -> gameService.listGames("nope")
@@ -77,7 +77,7 @@ public class GameServiceTest {
     // joinGame tests
 
     @Test
-    public void joinGame_success() throws Exception {
+    public void joinGameSuccess() throws Exception {
         // create empty game
         int id = gameService.createGame(
                 new CreateGameRequest("G2", validToken),
@@ -96,7 +96,7 @@ public class GameServiceTest {
     }
 
     @Test
-    public void joinGame_unauthorized() throws Exception {
+    public void joinGameUnauthorized() throws Exception {
         // create a game so the ID exists
         int id = gameService.createGame(
                 new CreateGameRequest("Cool Game", validToken),

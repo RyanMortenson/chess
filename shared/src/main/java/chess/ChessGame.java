@@ -96,8 +96,9 @@ public class ChessGame {
             for (int c = 1; c <= 8; c++) {
                 ChessPosition pos = new ChessPosition(r, c);
                 ChessPiece p = board.getPiece(pos);
-                if (p == null || p.getTeamColor() == teamColor)
+                if (p == null || p.getTeamColor() == teamColor) {
                     continue;
+                }
                 for (ChessMove m : p.pieceMoves(board, pos)) {
                     if (m.getEndPosition().equals(kingPosition)) {
                         return true;
