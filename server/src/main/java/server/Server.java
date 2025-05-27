@@ -57,21 +57,27 @@ public class Server {
 
 
         before((req, res) -> {
-            String p = req.pathInfo();
-            String m = req.requestMethod();
+            String path   = req.pathInfo();
+            String method = req.requestMethod();
 
+            // open endpoints
+            if ("DELETE".equals(method) && "/db".equals(path)) return;
+            if ("POST".equals(method) && "/user".equals(path)) return;
+            if ("POST".equals(method) && "/session".equals(path)) return;
+            if ("DELETE".equals(method) && "/session".equals(path)) return;
 
-            if ("/db".equals(p))            return;
-            if ("POST".equals(m) && "/user".equals(p))    return;
-            if ("/session".equals(p))       return;
-
-
+            // everything else requires a token
             String token = req.headers("Authorization");
-            if (token == null) {
-                halt(401, gson.toJson(Map.of("message","Error: missing token")));
+            if (token == null || token.isBlank()) {
+                halt(401, gson.toJson(Map.of("message","Error: unauthorized")));
             }
 
-            authService.validateToken(token);
+            try {
+                authService.validateToken(token);
+            } catch (UnauthorizedException ue) {
+                // turn any invalid‐token into a 401
+                halt(401, gson.toJson(Map.of("message","Error: unauthorized")));
+            }
         });
 
 
