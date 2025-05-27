@@ -64,18 +64,13 @@ public class AuthServiceTest {
 
     @Test
     public void validateTokenNullOrMissing() {
-        // for null token
-        assertThrows(
-                DataAccessException.class,
-                () -> authService.validateToken(null),
-                "null should be unauthorized"
-        );
-        // for missing token
-        assertThrows(
-                DataAccessException.class,
-                () -> authService.validateToken("invalid"),
-                "unknown token should fail"
-        );
+    // we now consider missing/invalid to be UnauthorizedException
+    assertThrows(
+    UnauthorizedException.class,
+    () -> authService.validateToken(null), "null should be unauthorized");
+    assertThrows(UnauthorizedException.class,
+    () -> authService.validateToken("invalid"),
+    "unknown token should fail");
     }
 
     // revokeToken tests

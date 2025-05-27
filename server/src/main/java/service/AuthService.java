@@ -21,16 +21,17 @@ public class AuthService {
         return auth;
     }
 
-    public AuthData validateToken(String authToken)
-            throws DataAccessException, UnauthorizedException {
-        if (authToken == null || authToken.isBlank()) {
+    public AuthData validateToken(String token) throws DataAccessException, UnauthorizedException {
+        if (token == null) {
             throw new UnauthorizedException("missing token");
         }
-        AuthData auth = authDao.getAuth(authToken);
-        if (auth == null) {
+        try {
+            // this will throw DataAccessException if the token isn't in the DAO
+            return authDao.getAuth(token);
+        } catch (DataAccessException e) {
+            // convert a missing/invalid‐token DAO error into UnauthorizedException
             throw new UnauthorizedException("invalid token");
         }
-        return auth;
     }
 
     public void revokeToken(String authToken) throws DataAccessException {
