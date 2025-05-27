@@ -29,7 +29,7 @@ public class DatabaseInitializer {
       );
       """;
 
-    /** Run all the DDLs in sequence. */
+
     public static void initialize() throws Exception {
         DatabaseManager.createDatabase();
         try (var conn = DatabaseManager.getConnection();

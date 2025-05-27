@@ -6,20 +6,16 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-/**
- * MySQL-backed implementation of the AuthDAO interface.
- */
+
 public class MySqlAuthDAO implements AuthDAO {
     public MySqlAuthDAO() {
         // no-arg constructor
     }
 
-    /**
-     * Clears all auth tokens from the 'auth' table.
-     */
+
     @Override
     public void clear() throws DataAccessException {
-        final String sql = "TRUNCATE TABLE `auth`";
+        final String sql = "DELETE FROM auth";
         try (Connection conn = DatabaseManager.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.executeUpdate();
@@ -28,9 +24,7 @@ public class MySqlAuthDAO implements AuthDAO {
         }
     }
 
-    /**
-     * Inserts a new auth record.
-     */
+
     @Override
     public void addAuth(AuthData auth) throws DataAccessException {
         final String sql = "INSERT INTO auth (authToken, username) VALUES (?, ?)";
@@ -45,9 +39,7 @@ public class MySqlAuthDAO implements AuthDAO {
         }
     }
 
-    /**
-     * Retrieves an AuthData by token, or null if not found.
-     */
+
     @Override
     public AuthData getAuth(String authToken) throws DataAccessException {
         final String sql = "SELECT authToken, username FROM auth WHERE authToken = ?";
@@ -68,9 +60,7 @@ public class MySqlAuthDAO implements AuthDAO {
         }
     }
 
-    /**
-     * Deletes an auth record. Throws if token was not present.
-     */
+
     @Override
     public void removeAuth(String authToken) throws DataAccessException {
         final String sql = "DELETE FROM auth WHERE authToken = ?";

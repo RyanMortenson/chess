@@ -8,9 +8,7 @@ import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * MySQL-backed implementation of the GameDAO interface.
- */
+
 public class MySqlGameDAO implements GameDAO {
     private final Gson gson = new Gson();
 
@@ -18,12 +16,10 @@ public class MySqlGameDAO implements GameDAO {
         // no-arg constructor
     }
 
-    /**
-     * Clears all games from the 'game' table.
-     */
+
     @Override
     public void clear() throws DataAccessException {
-        final String sql = "TRUNCATE TABLE `game`";
+        final String sql = "DELETE FROM game";
         try (Connection conn = DatabaseManager.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.executeUpdate();
@@ -32,9 +28,7 @@ public class MySqlGameDAO implements GameDAO {
         }
     }
 
-    /**
-     * Inserts a new game record and returns the generated gameID.
-     */
+
     @Override
     public int createGame(GameData game) throws DataAccessException {
         final String sql = "INSERT INTO game (whiteUsername, blackUsername, gameName, gameState) VALUES (?,?,?,?)";
@@ -58,9 +52,7 @@ public class MySqlGameDAO implements GameDAO {
         }
     }
 
-    /**
-     * Retrieves a GameData by gameID, or null if not found.
-     */
+
     @Override
     public GameData getGame(int gameID) throws DataAccessException {
         final String sql = "SELECT whiteUsername, blackUsername, gameName, gameState FROM game WHERE gameID = ?";
@@ -83,9 +75,7 @@ public class MySqlGameDAO implements GameDAO {
         }
     }
 
-    /**
-     * Returns a list of all games.
-     */
+
     @Override
     public List<GameData> listGames() throws DataAccessException {
         final String sql = "SELECT gameID, whiteUsername, blackUsername, gameName, gameState FROM game";
@@ -108,9 +98,7 @@ public class MySqlGameDAO implements GameDAO {
         }
     }
 
-    /**
-     * Updates an existing game row; throws if no row was updated.
-     */
+
     @Override
     public void updateGame(int gameID, GameData game) throws DataAccessException {
         final String sql = "UPDATE game SET whiteUsername=?, blackUsername=?, gameState=? WHERE gameID=?";

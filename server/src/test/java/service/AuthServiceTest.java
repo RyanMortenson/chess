@@ -6,6 +6,7 @@ import dataaccess.MemoryAuthDAO;
 import model.AuthData;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import service.exceptions.UnauthorizedException;
 
 import java.util.UUID;
 
@@ -53,7 +54,7 @@ public class AuthServiceTest {
     // validateToken tests
 
     @Test
-    public void validateTokenSuccess() throws DataAccessException {
+    public void validateTokenSuccess() throws DataAccessException, UnauthorizedException {
         String t = UUID.randomUUID().toString();
         authDao.addAuth(new AuthData(t, "yeahhh"));
         AuthData auth = authService.validateToken(t);

@@ -56,25 +56,24 @@ public class Server {
 
 
         before((req, res) -> {
-            String path   = req.pathInfo();
             String method = req.requestMethod();
+            String path   = req.pathInfo();
 
-            // always allow the database‐clear endpoint
             if ("DELETE".equals(method) && "/db".equals(path)) {
                 return;
             }
 
-            // allow registration
-            if ("POST".equals(method) && "/user/register".equals(path)) {
+
+            if ("POST".equals(method) && "/user".equals(path)) {
                 return;
             }
 
-            // allow login
-            if ("POST".equals(method) && "/user/login".equals(path)) {
+
+            if ("POST".equals(method) && "/session".equals(path)) {
                 return;
             }
 
-            // everywhere else *requires* a token
+
             String token = req.headers("Authorization");
             try {
                 authService.validateToken(token);
@@ -82,6 +81,7 @@ public class Server {
                 halt(401, gson.toJson(Map.of("message", "Error: " + ue.getMessage())));
             }
         });
+
 
 
 

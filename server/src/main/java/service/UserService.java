@@ -39,19 +39,19 @@ public class UserService {
         return new RegisterResult(request.username(), authToken);
     }
 
-    public LoginResult login(LoginRequest req)
-            throws UnauthorizedException, DataAccessException {
+    public LoginResult login(LoginRequest req) throws UnauthorizedException, DataAccessException {
         UserData stored = userDao.getUser(req.username());
         if (stored == null) {
             throw new UnauthorizedException("invalid credentials");
         }
-
+        // use BCrypt to verify
         if (!BCrypt.checkpw(req.password(), stored.password())) {
             throw new UnauthorizedException("invalid credentials");
         }
 
         String token = UUID.randomUUID().toString();
-        authDao.addAuth(new AuthData(token, req.username()));
+        AuthData auth = new AuthData(token, req.username());
+        authDao.addAuth(auth);
 
         return new LoginResult(req.username(), token);
     }
