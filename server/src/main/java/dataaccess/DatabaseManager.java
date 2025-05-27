@@ -18,7 +18,7 @@ public class DatabaseManager {
         try (var conn = DriverManager.getConnection(connectionUrl, dbUsername, dbPassword);
              var preparedStatement = conn.prepareStatement(statement)) {
             preparedStatement.executeUpdate();
-            System.out.println("✅ Database checked/created: " + databaseName);
+            //System.out.println("✅ Database checked/created: " + databaseName);
         } catch (SQLException ex) {
             throw new DataAccessException("failed to create database", ex);
         }
@@ -29,7 +29,7 @@ public class DatabaseManager {
             Connection conn = DriverManager.getConnection(connectionUrl, dbUsername, dbPassword);
             conn.setCatalog(databaseName);
             conn.setAutoCommit(true);
-            System.out.println("✅ Connected to DB: " + databaseName);
+            //System.out.println("✅ Connected to DB: " + databaseName);
             return conn;
         } catch (SQLException ex) {
             throw new DataAccessException("failed to get connection", ex);
