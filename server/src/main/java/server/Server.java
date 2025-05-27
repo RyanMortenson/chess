@@ -48,38 +48,43 @@ public class Server {
         staticFiles.location("web");
 
 
+        // 1) global 500‐handler for any real DataAccessException
         exception(DataAccessException.class, (e, req, res) -> {
             res.type("application/json");
             res.status(500);
             res.body(gson.toJson(Map.of("message","Error: "+e.getMessage())));
         });
 
-
+// 2) auth filter
         before((req, res) -> {
-            String method = req.requestMethod();
-            String path   = req.pathInfo();
+            String p = req.pathInfo();
+            String m = req.requestMethod();
 
-            if ("DELETE".equals(method) && "/db".equals(path)) {
-                return;
-            }
+            // --- open endpoints:
+            if ("/db".equals(p))            return;  // clear
+            if ("POST".equals(m) && "/user".equals(p))    return;  // register
+            if ("/session".equals(p))       return;  // both login (POST) and logout (DELETE)
 
-
-            if ("POST".equals(method) && "/user".equals(path)) {
-                return;
-            }
-
-
-            if ("POST".equals(method) && "/session".equals(path)) {
-                return;
-            }
-
-
+            // --- everything else MUST have a token
             String token = req.headers("Authorization");
-            try {
-                authService.validateToken(token);
-            } catch (UnauthorizedException ue) {
-                halt(401, gson.toJson(Map.of("message", "Error: " + ue.getMessage())));
+            if (token == null) {
+                halt(401, gson.toJson(Map.of("message","Error: missing token")));
             }
+            // if the DB is down, this next line will throw DataAccessException,
+            // and that will bubble straight to your 500‐handler above.
+            authService.validateToken(token);
+        });
+
+// 3) now register your routes
+        new UserHandler(  userService, gson).registerRoutes();   // POST /user
+        new AuthHandler(  userService, authService, gson).registerRoutes();
+        new GameHandler( gameService,  gson).registerRoutes();   // /game…
+
+// 4) finally the clear‐DB route
+        delete("/db", (req, res) -> {
+            databaseService.clear();   // if this throws DataAccessException, the exception‐handler above will catch it
+            res.status(200);
+            return "{}";
         });
 
 

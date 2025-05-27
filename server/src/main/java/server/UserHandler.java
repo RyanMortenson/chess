@@ -26,7 +26,7 @@ public class UserHandler {
         post("/user", this::handleRegister);
     }
 
-    private Object handleRegister(Request req, Response res) {
+    private Object handleRegister(Request req, Response res) throws DataAccessException {
         try {
             RegisterRequest r = gson.fromJson(req.body(), RegisterRequest.class);
             // missing fields 400
@@ -39,10 +39,15 @@ public class UserHandler {
             res.status(200);
             return gson.toJson(result);
         } catch (DataAccessException e) {
-            // duplicate username 403
-            res.type("application/json");
-            res.status(403);
-            return gson.toJson(Map.of("message", "Error: " + e.getMessage()));
+            String lower = e.getMessage().toLowerCase();
+            // if it really was duplicate user then 403, otherwise re-throw
+            if (lower.contains("username already taken")) {
+                res.type("application/json");
+                res.status(403);
+                return gson.toJson(Map.of("message", "Error: username already taken"));
+            }
+            // anything else is a 500
+            throw e;
         }
     }
 
