@@ -12,6 +12,7 @@ import service.results.RegisterResult;
 import dataaccess.UserDAO;
 import dataaccess.AuthDAO;
 import model.AuthData;
+import org.mindrot.jbcrypt.BCrypt; //for epic encrypted passwords
 
 import java.util.UUID;
 
@@ -25,9 +26,11 @@ public class UserService {
     }
 
     public RegisterResult register(RegisterRequest request) throws DataAccessException {
-        userDao.createUser(new UserData(request.username(),
-                request.password(),
-                request.email()));
+        // Encrypt that password
+        String hashed = BCrypt.hashpw(request.password(), BCrypt.gensalt());
+        // Store password encrypted
+        var toStore = new UserData(request.username(), hashed, request.email());
+        userDao.createUser(toStore);
 
         String authToken = generateNewAuthToken();
 
@@ -36,16 +39,19 @@ public class UserService {
         return new RegisterResult(request.username(), authToken);
     }
 
-    public LoginResult login(LoginRequest req) throws UnauthorizedException, DataAccessException {
+    public LoginResult login(LoginRequest req)
+            throws UnauthorizedException, DataAccessException {
         UserData stored = userDao.getUser(req.username());
+        if (stored == null) {
+            throw new UnauthorizedException("invalid credentials");
+        }
 
-        if (!stored.password().equals(req.password())) {
+        if (!BCrypt.checkpw(req.password(), stored.password())) {
             throw new UnauthorizedException("invalid credentials");
         }
 
         String token = UUID.randomUUID().toString();
-        AuthData auth = new AuthData(token, req.username());
-        authDao.addAuth(auth);
+        authDao.addAuth(new AuthData(token, req.username()));
 
         return new LoginResult(req.username(), token);
     }
