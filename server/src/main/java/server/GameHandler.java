@@ -64,8 +64,7 @@ public class GameHandler {
             return errorBody("unauthorized");
 
         } catch (DataAccessException e) {
-            res.status(401);
-            return errorBody("unauthorized");
+            return mapDataAccessError(res, e);
 
         } catch (Exception e) {
             res.status(500);
@@ -86,9 +85,8 @@ public class GameHandler {
             return gson.toJson(result);
 
         } catch (DataAccessException e) {
-            // invalid token or DAO error
-            res.status(401);
-            return errorBody("unauthorized");
+            return mapDataAccessError(res, e);
+
         } catch (Exception e) {
             res.status(500);
             return errorBody("internal error");
@@ -109,9 +107,7 @@ public class GameHandler {
             res.status(400);
             return errorBody("bad request");
         }
-        if (joinReq == null
-                || joinReq.gameID() == null
-                || joinReq.playerColor() == null) {
+        if (joinReq == null || joinReq.gameID() == null || joinReq.playerColor() == null) {
             res.status(400);
             return errorBody("authToken, gameID and teamColor required");
         }
@@ -125,21 +121,31 @@ public class GameHandler {
             res.status(400);
             return errorBody("bad request");
 
-        } catch (UnauthorizedException e) {
-            res.status(401);
-            return errorBody("unauthorized");
-
         } catch (AlreadyTakenException e) {
             res.status(403);
             return errorBody("already taken");
 
         } catch (NotFoundException e) {
             res.status(404);
-            return errorBody("bad request");
+            return errorBody("game not found");
+
+        } catch (DataAccessException e) {
+            return mapDataAccessError(res, e);
 
         } catch (Exception e) {
             res.status(500);
             return errorBody("internal error");
+        }
+    }
+
+    private Object mapDataAccessError(Response res, DataAccessException e) {
+        String msg = e.getMessage() != null ? e.getMessage().toLowerCase() : "";
+        if (msg.contains("unauthorized") || msg.contains("invalid token")) {
+            res.status(401);
+            return errorBody("unauthorized");
+        } else {
+            res.status(500);
+            return errorBody("internal server error");
         }
     }
 

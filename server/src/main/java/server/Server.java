@@ -1,28 +1,23 @@
 package server;
 
 import com.google.gson.Gson;
-import dataaccess.UserDAO;
+import dataaccess.*;
 import dataaccess.AuthDAO;
 import dataaccess.GameDAO;
-import dataaccess.MemoryUserDAO;
-import dataaccess.MemoryAuthDAO;
-import dataaccess.MemoryGameDAO;
 import service.AuthService;
 import service.UserService;
 import service.GameService;
 import service.DBService;
-import server.UserHandler;
-import server.AuthHandler;
-import server.GameHandler;
+import service.exceptions.UnauthorizedException;
 import spark.Spark;
+
+
+import java.util.Map;
 
 import static spark.Spark.*;
 
 public class Server {
     private final Gson gson;
-    private final UserDAO userDao;
-    private final AuthDAO authDao;
-    private final GameDAO gameDao;
     private final AuthService authService;
     private final UserService userService;
     private final GameService gameService;
@@ -30,9 +25,9 @@ public class Server {
 
     public Server() {
         this.gson             = new Gson();
-        this.userDao          = new MemoryUserDAO();
-        this.authDao          = new MemoryAuthDAO();
-        this.gameDao          = new MemoryGameDAO();
+        UserDAO userDao = new MySqlUserDAO();
+        AuthDAO authDao = new MySqlAuthDAO();
+        GameDAO gameDao = new MySqlGameDAO();
         this.authService      = new AuthService(authDao);
         this.userService      = new UserService(userDao, authDao);
         this.gameService      = new GameService(gameDao, authDao);
@@ -41,8 +36,65 @@ public class Server {
 
 
     public int run(int desiredPort) {
+        try {
+            dataaccess.DatabaseInitializer.initialize();
+        } catch (Exception e) {
+            System.err.println("Failed to initialize schema: " + e.getMessage());
+            e.printStackTrace();
+            System.exit(1);
+        }
+
         port(desiredPort);
         staticFiles.location("web");
+
+
+
+        exception(DataAccessException.class, (e, req, res) -> {
+            res.type("application/json");
+            res.status(500);
+            res.body(gson.toJson(Map.of("message","Error: "+e.getMessage())));
+        });
+
+
+        before((req, res) -> {
+            String path   = req.pathInfo();
+            String method = req.requestMethod();
+
+            // open endpoints
+            if ("DELETE".equals(method) && "/db".equals(path)) return;
+            if ("POST".equals(method) && "/user".equals(path)) return;
+            if ("POST".equals(method) && "/session".equals(path)) return;
+            if ("DELETE".equals(method) && "/session".equals(path)) return;
+
+            // everything else requires a token
+            String token = req.headers("Authorization");
+            if (token == null || token.isBlank()) {
+                halt(401, gson.toJson(Map.of("message","Error: unauthorized")));
+            }
+
+            try {
+                authService.validateToken(token);
+            } catch (UnauthorizedException ue) {
+                // turn any invalid‐token into a 401
+                halt(401, gson.toJson(Map.of("message","Error: unauthorized")));
+            }
+        });
+
+
+        new UserHandler(  userService, gson).registerRoutes();   // POST /user
+        new AuthHandler(  userService, authService, gson).registerRoutes();
+        new GameHandler( gameService,  gson).registerRoutes();   // /game…
+
+
+        delete("/db", (req, res) -> {
+            databaseService.clear();   // if this throws DataAccessException, the exception‐handler above will catch it
+            res.status(200);
+            return "{}";
+        });
+
+
+
+
 
         new UserHandler(userService, gson).registerRoutes();
         new AuthHandler(userService, authService, gson).registerRoutes();

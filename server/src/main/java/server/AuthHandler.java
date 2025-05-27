@@ -43,16 +43,13 @@ public class AuthHandler {
             return errorBody("bad request");
         }
 
-        if (loginReq == null
-                || loginReq.username() == null
-                || loginReq.password() == null) {
+        if (loginReq == null || loginReq.username() == null || loginReq.password() == null) {
             res.status(400);
             return errorBody("bad request");
         }
 
         try {
             LoginResult result = userService.login(loginReq);
-
             res.status(200);
             return gson.toJson(result);
 
@@ -61,16 +58,7 @@ public class AuthHandler {
             return errorBody("unauthorized");
 
         } catch (DataAccessException e) {
-            String msg = e.getMessage() != null
-                    ? e.getMessage().toLowerCase()
-                    : "";
-            if (msg.contains("user not found")) {
-                res.status(401);
-                return errorBody("unauthorized");
-            } else {
-                res.status(500);
-                return errorBody(e.getMessage());
-            }
+            return mapDataAccessError(res, e);
 
         } catch (Exception e) {
             res.status(500);
@@ -91,13 +79,22 @@ public class AuthHandler {
             return "{}";
 
         } catch (DataAccessException e) {
+            return mapDataAccessError(res, e);
+        }
+    }
+
+    private Object mapDataAccessError(Response res, DataAccessException e) {
+        String msg = e.getMessage() != null ? e.getMessage().toLowerCase() : "";
+        if (msg.contains("unauthorized") || msg.contains("invalid")) {
             res.status(401);
             return errorBody("unauthorized");
+        } else {
+            res.status(500);
+            return errorBody("internal server error");
         }
     }
 
     private String errorBody(String msg) {
         return gson.toJson(Collections.singletonMap("message", "Error: " + msg));
     }
-
 }

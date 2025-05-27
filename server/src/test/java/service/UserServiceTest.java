@@ -12,6 +12,7 @@ import service.results.RegisterResult;
 import service.results.LoginResult;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mindrot.jbcrypt.BCrypt;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -38,9 +39,13 @@ public class UserServiceTest {
         assertNotNull(res.authToken());
 
         UserData stored = userDao.getUser("john");
-        assertEquals("john", stored.username());
-        assertEquals("cena", stored.password());
+        assertEquals("john",    stored.username());
         assertEquals("john@cena.com", stored.email());
+
+        String hash = stored.password();
+        assertNotEquals("cena", hash,        "raw password must not be stored");
+        assertTrue(hash.startsWith("$2a$"), "should be a BCrypt hash");
+        assertTrue(BCrypt.checkpw("cena", hash), "BCrypt.checkpw must succeed");
     }
 
     @Test
