@@ -3,6 +3,8 @@ package service;
 import dataaccess.AuthDAO;
 import dataaccess.DataAccessException;
 import model.AuthData;
+import service.exceptions.UnauthorizedException;
+
 import java.util.UUID;
 
 public class AuthService {
@@ -19,11 +21,16 @@ public class AuthService {
         return auth;
     }
 
-    public AuthData validateToken(String authToken) throws DataAccessException {
-        if (authToken == null) {
-            throw new DataAccessException("Error: unauthorized");
+    public AuthData validateToken(String authToken)
+            throws DataAccessException, UnauthorizedException {
+        if (authToken == null || authToken.isBlank()) {
+            throw new UnauthorizedException("missing token");
         }
-        return authDao.getAuth(authToken);
+        AuthData auth = authDao.getAuth(authToken);
+        if (auth == null) {
+            throw new UnauthorizedException("invalid token");
+        }
+        return auth;
     }
 
     public void revokeToken(String authToken) throws DataAccessException {
