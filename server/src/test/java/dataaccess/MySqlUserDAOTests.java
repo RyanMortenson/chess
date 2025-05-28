@@ -23,7 +23,7 @@ public class MySqlUserDAOTests {
     // Clear
 
     @Test
-    void clear_removesAllUsers() throws DataAccessException {
+    void clearTest() throws DataAccessException {
         dao.createUser(new UserData("u1","pw1","e1@example.com"));
         assertNotNull(dao.getUser("u1"));
         dao.clear();
@@ -60,12 +60,12 @@ public class MySqlUserDAOTests {
     // getUser
 
     @Test
-    void getUser_nonExisting_returnsNull() throws DataAccessException {
+    void getUserNull() throws DataAccessException {
         assertNull(dao.getUser("noone"));
     }
 
     @Test
-    void getUser_existing_afterCreate_returnsData() throws DataAccessException {
+    void getUserSuccess() throws DataAccessException {
         dao.createUser(new UserData("carol","pw3","carol@x.com"));
         UserData u = dao.getUser("carol");
         assertNotNull(u);
