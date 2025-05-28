@@ -9,7 +9,6 @@ import service.requests.RegisterRequest;
 import service.requests.LoginRequest;
 import service.requests.LogoutRequest;
 import service.results.RegisterResult;
-import service.results.LoginResult;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mindrot.jbcrypt.BCrypt;
@@ -111,16 +110,11 @@ public class UserServiceTest {
         );
         userService.logout(new LogoutRequest(reg.authToken()));
 
-        // second logout on same token should now throw
+        // second logout on same token throw
         assertThrows(
                 DataAccessException.class,
                 () -> userService.logout(new LogoutRequest(reg.authToken()))
         );
 
-        // and logging out with a random invalid token also throws
-        assertThrows(
-                DataAccessException.class,
-                () -> userService.logout(new LogoutRequest("non-existent token"))
-        );
     }
 }

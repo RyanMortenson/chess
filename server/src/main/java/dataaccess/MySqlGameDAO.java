@@ -3,7 +3,6 @@ package dataaccess;
 import com.google.gson.Gson;
 import chess.ChessGame;
 import model.GameData;
-
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -38,7 +37,6 @@ public class MySqlGameDAO implements GameDAO {
             stmt.setString(3, game.gameName());
             stmt.setString(4, gson.toJson(game.game()));
             stmt.executeUpdate();
-            System.out.println("Inserted game: " + game.gameName());
             try (ResultSet rs = stmt.getGeneratedKeys()) {
                 if (rs.next()) {
                     return rs.getInt(1);

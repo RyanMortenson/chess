@@ -7,13 +7,10 @@ import service.UserService;
 import service.AuthService;
 import service.exceptions.UnauthorizedException;
 import service.requests.LoginRequest;
-import service.requests.LogoutRequest;
 import service.results.LoginResult;
 import spark.Request;
 import spark.Response;
-
 import java.util.Collections;
-import java.util.Map;
 
 import static spark.Spark.delete;
 import static spark.Spark.post;

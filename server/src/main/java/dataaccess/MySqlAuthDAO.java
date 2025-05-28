@@ -32,7 +32,6 @@ public class MySqlAuthDAO implements AuthDAO {
             stmt.setString(1, auth.authToken());
             stmt.setString(2, auth.username());
             stmt.executeUpdate();
-            System.out.println("Inserted auth token for user: " + auth.username());
         } catch (SQLException e) {
             throw new DataAccessException("Error adding auth token", e);
         }

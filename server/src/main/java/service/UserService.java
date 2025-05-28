@@ -1,7 +1,6 @@
 package service;
 
 import dataaccess.DataAccessException;
-import dataaccess.MemoryUserDAO;
 import model.UserData;
 import service.exceptions.UnauthorizedException;
 import service.requests.LoginRequest;

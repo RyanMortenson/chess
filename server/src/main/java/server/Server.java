@@ -39,7 +39,6 @@ public class Server {
         try {
             dataaccess.DatabaseInitializer.initialize();
         } catch (Exception e) {
-            System.err.println("Failed to initialize schema: " + e.getMessage());
             e.printStackTrace();
             System.exit(1);
         }
@@ -75,25 +74,9 @@ public class Server {
             try {
                 authService.validateToken(token);
             } catch (UnauthorizedException ue) {
-                // turn any invalid‐token into a 401
                 halt(401, gson.toJson(Map.of("message","Error: unauthorized")));
             }
         });
-
-
-        new UserHandler(  userService, gson).registerRoutes();   // POST /user
-        new AuthHandler(  userService, authService, gson).registerRoutes();
-        new GameHandler( gameService,  gson).registerRoutes();   // /game…
-
-
-        delete("/db", (req, res) -> {
-            databaseService.clear();   // if this throws DataAccessException, the exception‐handler above will catch it
-            res.status(200);
-            return "{}";
-        });
-
-
-
 
 
         new UserHandler(userService, gson).registerRoutes();
