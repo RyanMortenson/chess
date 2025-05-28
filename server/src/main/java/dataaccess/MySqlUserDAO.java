@@ -12,7 +12,6 @@ import java.sql.SQLIntegrityConstraintViolationException;
 
 public class MySqlUserDAO implements UserDAO {
     public MySqlUserDAO() {
-        // no-op constructor
     }
 
 
@@ -35,7 +34,7 @@ public class MySqlUserDAO implements UserDAO {
              PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setString(1, user.username());
             stmt.setString(2, user.email());
-            stmt.setString(3, user.password());     // already hashed by the service!
+            stmt.setString(3, user.password());
             stmt.executeUpdate();
         } catch (SQLIntegrityConstraintViolationException e) {
             throw new DataAccessException("Error: username already taken", e);

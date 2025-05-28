@@ -13,7 +13,6 @@ public class MySqlGameDAO implements GameDAO {
     private final Gson gson = new Gson();
 
     public MySqlGameDAO() {
-        // no-arg constructor
     }
 
 

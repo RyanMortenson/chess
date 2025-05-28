@@ -9,7 +9,6 @@ import java.sql.SQLException;
 
 public class MySqlAuthDAO implements AuthDAO {
     public MySqlAuthDAO() {
-        // no-arg constructor
     }
 
 

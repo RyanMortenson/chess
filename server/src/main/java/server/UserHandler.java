@@ -29,7 +29,6 @@ public class UserHandler {
     private Object handleRegister(Request req, Response res) throws DataAccessException {
         try {
             RegisterRequest r = gson.fromJson(req.body(), RegisterRequest.class);
-            // missing fields 400
             if (r.username() == null || r.password() == null || r.email() == null) {
                 res.status(400);
                 return gson.toJson(Map.of("message", "Error: all fields required"));
@@ -40,7 +39,6 @@ public class UserHandler {
             return gson.toJson(result);
         } catch (DataAccessException e) {
             String lower = e.getMessage().toLowerCase();
-            // if it really was duplicate user then 403, otherwise re-throw
             if (lower.contains("username already taken")) {
                 res.type("application/json");
                 res.status(403);

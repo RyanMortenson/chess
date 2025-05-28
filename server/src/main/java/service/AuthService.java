@@ -22,15 +22,17 @@ public class AuthService {
     }
 
     public AuthData validateToken(String token) throws DataAccessException, UnauthorizedException {
-        if (token == null) {
+        if (token == null || token.isBlank()) {
             throw new UnauthorizedException("missing token");
         }
         try {
-            // this will throw DataAccessException if the token isn't in the DAO
-            return authDao.getAuth(token);
-        } catch (DataAccessException e) {
-            // convert a missing/invalid‐token DAO error into UnauthorizedException
-            throw new UnauthorizedException("invalid token");
+            AuthData auth = authDao.getAuth(token);
+            if (auth == null) {
+                throw new UnauthorizedException("invalid token");
+            }
+            return auth;
+        } catch (DataAccessException dae) {
+            throw dae;
         }
     }
 
