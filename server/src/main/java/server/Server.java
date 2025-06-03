@@ -11,7 +11,6 @@ import service.DBService;
 import service.exceptions.UnauthorizedException;
 import spark.Spark;
 
-
 import java.util.Map;
 
 import static spark.Spark.*;
@@ -24,16 +23,15 @@ public class Server {
     private final DBService databaseService;
 
     public Server() {
-        this.gson             = new Gson();
-        UserDAO userDao = new MySqlUserDAO();
-        AuthDAO authDao = new MySqlAuthDAO();
-        GameDAO gameDao = new MySqlGameDAO();
-        this.authService      = new AuthService(authDao);
-        this.userService      = new UserService(userDao, authDao);
-        this.gameService      = new GameService(gameDao, authDao);
-        this.databaseService  = new DBService(userDao, authDao, gameDao);
+        this.gson            = new Gson();
+        UserDAO userDao      = new MySqlUserDAO();
+        AuthDAO authDao      = new MySqlAuthDAO();
+        GameDAO gameDao      = new MySqlGameDAO();
+        this.authService     = new AuthService(authDao);
+        this.userService     = new UserService(userDao, authDao);
+        this.gameService     = new GameService(gameDao, authDao);
+        this.databaseService = new DBService(userDao, authDao, gameDao);
     }
-
 
     public int run(int desiredPort) {
         try {
@@ -47,11 +45,18 @@ public class Server {
         staticFiles.location("web");
 
 
+        post("/clear", (req, res) -> {
+            // Wipe out all users, tokens, games, etc.
+            databaseService.clear();
+            res.status(200);
+            return "{}";
+        });
+
 
         exception(DataAccessException.class, (e, req, res) -> {
             res.type("application/json");
             res.status(500);
-            res.body(gson.toJson(Map.of("message","Error: "+e.getMessage())));
+            res.body(gson.toJson(Map.of("message", "Error: " + e.getMessage())));
         });
 
 
@@ -59,22 +64,23 @@ public class Server {
             String path   = req.pathInfo();
             String method = req.requestMethod();
 
-            // open endpoints
-            if ("DELETE".equals(method) && "/db".equals(path)) {return;}
-            if ("POST".equals(method) && "/user".equals(path)) {return;}
-            if ("POST".equals(method) && "/session".equals(path)) {return;}
-            if ("DELETE".equals(method) && "/session".equals(path)) {return;}
+            // open endpoints (no token required)
+            if ("POST".equals(method)   && "/clear".equals(path))   return;
+            if ("DELETE".equals(method) && "/db".equals(path))      return;
+            if ("POST".equals(method)   && "/user".equals(path))    return;
+            if ("POST".equals(method)   && "/session".equals(path)) return;
+            if ("DELETE".equals(method) && "/session".equals(path)) return;
 
             // everything else requires a token
             String token = req.headers("Authorization");
             if (token == null || token.isBlank()) {
-                halt(401, gson.toJson(Map.of("message","Error: unauthorized")));
+                halt(401, gson.toJson(Map.of("message", "Error: unauthorized")));
             }
 
             try {
                 authService.validateToken(token);
             } catch (UnauthorizedException ue) {
-                halt(401, gson.toJson(Map.of("message","Error: unauthorized")));
+                halt(401, gson.toJson(Map.of("message", "Error: unauthorized")));
             }
         });
 
