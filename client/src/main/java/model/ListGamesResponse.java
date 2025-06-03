@@ -2,6 +2,5 @@ package model;
 
 
 public record ListGamesResponse(
-        java.util.List<GameData> games,
-        String message
+        java.util.List<GameData> games
 ) {}
