@@ -19,29 +19,46 @@ public class PreLoginClient {
     public void run() {
         Scanner scanner = new Scanner(System.in);
 
-        System.out.println("Welcome to Chess! Type "
-                + Colors.FG_CYAN + "help"
-                + Colors.RESET + " for commands.");
+        System.out.println(EscapeSequences.SET_TEXT_COLOR_BLUE + "♕ Welcome to Chess ♕ \n"
+                + EscapeSequences.SET_TEXT_COLOR_YELLOW+ " Sign in to start. \n" + EscapeSequences.RESET_TEXT_COLOR);
+        System.out.println("Options:");
+        System.out.println(EscapeSequences.SET_TEXT_COLOR_GREEN
+                + "register"
+                + EscapeSequences.RESET_TEXT_COLOR + " ~~ Create Account");
+        System.out.println(EscapeSequences.SET_TEXT_COLOR_GREEN
+                + "login"
+                + EscapeSequences.RESET_TEXT_COLOR + " ~~ Play Chess");
+        System.out.println(EscapeSequences.SET_TEXT_COLOR_GREEN
+                + "quit"
+                + EscapeSequences.RESET_TEXT_COLOR + " ~~ Quit Chess");
+        System.out.println(EscapeSequences.SET_TEXT_COLOR_GREEN
+                + "help"
+                + EscapeSequences.RESET_TEXT_COLOR + " ~~ List Commands");
 
         while (true) {
-            System.out.print(Colors.FG_CYAN + ">>> " + Colors.RESET);
+            System.out.print(EscapeSequences.SET_TEXT_COLOR_CYAN + "Chess login >>> " + EscapeSequences.RESET_TEXT_COLOR);
             String command = scanner.nextLine().trim().toLowerCase();
+
+            if (command.isEmpty()) {
+                continue;
+            }
+
 
             switch (command) {
                 case "help" -> {
-                    System.out.println("Available commands:");
-                    System.out.println("  " + Colors.FG_GREEN
+                    System.out.println("Options:");
+                    System.out.println(EscapeSequences.SET_TEXT_COLOR_GREEN
                             + "register"
-                            + Colors.RESET + " ~~ Create Account");
-                    System.out.println("  " + Colors.FG_GREEN
+                            + EscapeSequences.RESET_TEXT_COLOR + " ~~ Create Account");
+                    System.out.println(EscapeSequences.SET_TEXT_COLOR_GREEN
                             + "login"
-                            + Colors.RESET + " ~~ Play Chess");
-                    System.out.println("  " + Colors.FG_GREEN
+                            + EscapeSequences.RESET_TEXT_COLOR + " ~~ Play Chess");
+                    System.out.println(EscapeSequences.SET_TEXT_COLOR_GREEN
                             + "quit"
-                            + Colors.RESET + " ~~ Quit Chess");
-                    System.out.println("  " + Colors.FG_GREEN
+                            + EscapeSequences.RESET_TEXT_COLOR + " ~~ Quit Chess");
+                    System.out.println(EscapeSequences.SET_TEXT_COLOR_GREEN
                             + "help"
-                            + Colors.RESET + " ~~ List Commands");
+                            + EscapeSequences.RESET_TEXT_COLOR + " ~~ List Commands");
                 }
 
                 case "quit" -> {
@@ -61,16 +78,21 @@ public class PreLoginClient {
                     try {
                         RegisterRequest req = new RegisterRequest(username, password, email);
                         RegisterResponse resp = facade.register(req);
-                        System.out.println("Registered as " + Colors.FG_YELLOW + resp.username() + Colors.RESET);
+                        System.out.println(EscapeSequences.SET_TEXT_COLOR_BLUE + "Registered as "
+                                + EscapeSequences.SET_TEXT_COLOR_YELLOW
+                                + resp.username()
+                                + EscapeSequences.RESET_TEXT_COLOR + "\n");
                         String token = resp.authToken();
 
-                        // change to PostLoginClient
+                        // transition to PostLoginClient
                         new PostLoginClient(facade, token).run();
 
-                        // back to preLoginClient
-                        System.out.println("You have been logged out.");
+                        // back to PreLoginClient
+                        System.out.println("You have been logged out.\n");
                     } catch (ResponseException e) {
-                        System.err.println(Colors.FG_RED + "Registration failed: " + e.getMessage() + Colors.RESET);
+                        System.out.println(EscapeSequences.SET_TEXT_COLOR_RED
+                                + extractErrorMessage(e)
+                                + EscapeSequences.RESET_TEXT_COLOR);
                     }
                 }
 
@@ -83,26 +105,47 @@ public class PreLoginClient {
                     try {
                         LoginRequest req = new LoginRequest(username, password);
                         LoginResponse resp = facade.login(req);
-                        System.out.println("Logged in as "
-                                + Colors.FG_YELLOW + resp.username() + Colors.RESET);
+                        System.out.println(EscapeSequences.SET_TEXT_COLOR_BLUE + "Logged in as "
+                                + EscapeSequences.SET_TEXT_COLOR_YELLOW
+                                + resp.username()
+                                + EscapeSequences.RESET_TEXT_COLOR);
                         String token = resp.authToken();
 
-                        // change to PostLoginClient
+                        // transition to PostLoginClient
                         new PostLoginClient(facade, token).run();
 
                         // back to PreLoginClient
-                        System.out.println("You have been logged out.");
-                    } catch (ResponseException ex) {
-                        System.err.println(Colors.FG_RED
-                                + "Login failed: " + ex.getMessage() + Colors.RESET);
+                        System.out.println("You have been logged out.\n");
+                    } catch (ResponseException e) {
+                        System.out.println(EscapeSequences.SET_TEXT_COLOR_RED
+                                + extractErrorMessage(e)
+                                + EscapeSequences.RESET_TEXT_COLOR);
                     }
                 }
 
-                default -> System.out.println(Colors.FG_YELLOW + "Unknown command."
-                                    + Colors.RESET + " Type "
-                                    + Colors.FG_CYAN + "help"
-                                    + Colors.RESET + " to see options.");
+                default -> System.out.println(EscapeSequences.SET_TEXT_COLOR_YELLOW
+                        + "Unknown command."
+                        + EscapeSequences.RESET_TEXT_COLOR
+                        + " Type "
+                        + EscapeSequences.SET_TEXT_COLOR_CYAN
+                        + "help"
+                        + EscapeSequences.RESET_TEXT_COLOR
+                        + " to see options.");
             }
         }
+    }
+
+    // GSON parser helper:
+    private String extractErrorMessage(ResponseException e) {
+        try {
+            com.google.gson.JsonObject obj = new com.google.gson.Gson()
+                    .fromJson(e.getMessage(), com.google.gson.JsonObject.class);
+            if (obj.has("message")) {
+                return obj.get("message").getAsString();
+            }
+        } catch (com.google.gson.JsonSyntaxException ex) {
+            // If it isn't valid json
+        }
+        return e.getMessage();
     }
 }
