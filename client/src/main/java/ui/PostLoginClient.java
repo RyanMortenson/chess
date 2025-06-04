@@ -42,115 +42,17 @@ public class PostLoginClient {
                 case "help" -> printMenu();
 
                 case "logout" -> {
-                    try {
-                        facade.logout(authToken);
-                        System.out.println(EscapeSequences.SET_TEXT_COLOR_YELLOW + "Logged out.\n"
-                                + EscapeSequences.RESET_TEXT_COLOR);
-                        return;  // back to PreLoginClient
-                    } catch (ResponseException e) {
-                        printError(e);
-                    }
+                    handleLogout();
+                    return;
                 }
 
-                case "c" -> {
-                    System.out.print("Enter game name: ");
-                    String gameName = scanner.nextLine().trim();
-                    if (gameName.isEmpty()) {
-                        System.out.println(EscapeSequences.SET_TEXT_COLOR_YELLOW
-                                + "Game name cannot be empty." + EscapeSequences.RESET_TEXT_COLOR);
-                        break;
-                    }
-                    try {
-                        CreateGameResponse resp = facade.createGame(gameName, authToken);
-                        System.out.println(EscapeSequences.SET_TEXT_COLOR_YELLOW
-                                + "Game created: " + gameName + EscapeSequences.RESET_TEXT_COLOR);
-                    } catch (ResponseException e) {
-                        printError(e);
-                    }
-                }
+                case "c" -> handleCreate();
 
-                case "l" -> {
-                    try {
-                        List<GameData> games = getGameList();
-                        if (games.isEmpty()) {
-                            System.out.println(EscapeSequences.SET_TEXT_COLOR_YELLOW
-                                    + "No active games." + EscapeSequences.RESET_TEXT_COLOR);
-                        } else {
-                            printGames(games);
-                        }
-                    } catch (ResponseException e) {
-                        printError(e);
-                    }
-                }
+                case "l" -> handleList();
 
-                case "p" -> {
-                    try {
-                        List<GameData> games = getGameList();
-                        if (games.isEmpty()) {
-                            System.out.println(EscapeSequences.SET_TEXT_COLOR_YELLOW
-                                    + "No games available to join." + EscapeSequences.RESET_TEXT_COLOR);
-                            break;
-                        }
-                        printGames(games);
+                case "p" -> handleJoin();
 
-                        GameData selected = selectGame(games, "to play");
-                        if (selected == null) {
-                            break;
-                        }
-
-                        System.out.print("Choose color " + EscapeSequences.SET_TEXT_COLOR_GREEN
-                                + "WHITE" + EscapeSequences.RESET_TEXT_COLOR + " or "
-                                + EscapeSequences.SET_TEXT_COLOR_GREEN + "BLACK"
-                                + EscapeSequences.RESET_TEXT_COLOR + ": ");
-                        String color = scanner.nextLine().trim().toUpperCase();
-                        if (!color.equals("WHITE") && !color.equals("BLACK")) {
-                            System.out.println(EscapeSequences.SET_TEXT_COLOR_YELLOW
-                                    + "Invalid color." + EscapeSequences.RESET_TEXT_COLOR);
-                            break;
-                        }
-
-                        JoinGameResponse joinResp = facade.joinGame(
-                                selected.gameID(), color, authToken);
-                        System.out.println(EscapeSequences.SET_TEXT_COLOR_YELLOW
-                                + "Joined game " + selected.gameName() + " as " + color + EscapeSequences.RESET_TEXT_COLOR);
-
-                        // Entering GameplayClient
-                        new GameplayClient(selected.gameID(), color).drawInitialBoard();
-
-                        // back to PostLoginClient
-                        System.out.println("Returning to home menu.");
-                    } catch (ResponseException e) {
-                        printError(e);
-                    }
-                }
-
-                case "o" -> {
-                    try {
-                        List<GameData> games = getGameList();
-                        if (games.isEmpty()) {
-                            System.out.println(EscapeSequences.SET_TEXT_COLOR_YELLOW
-                                    + "No games available to observe." + EscapeSequences.RESET_TEXT_COLOR);
-                            break;
-                        }
-                        printGames(games);
-
-                        GameData selected = selectGame(games, "to observe");
-                        if (selected == null) {
-                            break;
-                        }
-
-                        System.out.println(EscapeSequences.SET_TEXT_COLOR_YELLOW
-                                + "Observing game: " + selected.gameName() + EscapeSequences.RESET_TEXT_COLOR);
-
-                        // Enter GameplayClient as observer
-                        new GameplayClient(selected.gameID(), "OBSERVER").drawInitialBoard();
-
-                        // back to PostLoginClient
-                        System.out.println("Returning to home menu.");
-                    } catch (ResponseException e) {
-                        printError(e);
-                    }
-                }
+                case "o" -> handleObserve();
 
                 default -> System.out.println(EscapeSequences.SET_TEXT_COLOR_YELLOW
                         + "Unknown command."
@@ -159,6 +61,110 @@ public class PostLoginClient {
                         + EscapeSequences.SET_TEXT_COLOR_GREEN + "help" + EscapeSequences.RESET_TEXT_COLOR
                         + " for options.");
             }
+        }
+    }
+
+    private void handleLogout() {
+        try {
+            facade.logout(authToken);
+            System.out.println(EscapeSequences.SET_TEXT_COLOR_YELLOW + "Logged out.\n"
+                    + EscapeSequences.RESET_TEXT_COLOR);
+        } catch (ResponseException e) {
+            printError(e);
+        }
+    }
+
+    private void handleCreate() {
+        System.out.print("Enter game name: ");
+        String gameName = scanner.nextLine().trim();
+        if (gameName.isEmpty()) {
+            System.out.println(EscapeSequences.SET_TEXT_COLOR_YELLOW
+                    + "Game name cannot be empty." + EscapeSequences.RESET_TEXT_COLOR);
+            return;
+        }
+        try {
+            CreateGameResponse resp = facade.createGame(gameName, authToken);
+            System.out.println(EscapeSequences.SET_TEXT_COLOR_YELLOW
+                    + "Game created: " + gameName + EscapeSequences.RESET_TEXT_COLOR);
+        } catch (ResponseException e) {
+            printError(e);
+        }
+    }
+
+    private void handleList() {
+        try {
+            List<GameData> games = getGameList();
+            if (games.isEmpty()) {
+                System.out.println(EscapeSequences.SET_TEXT_COLOR_YELLOW
+                        + "No active games." + EscapeSequences.RESET_TEXT_COLOR);
+            } else {
+                printGames(games);
+            }
+        } catch (ResponseException e) {
+            printError(e);
+        }
+    }
+
+    private void handleJoin() {
+        try {
+            List<GameData> games = getGameList();
+            if (games.isEmpty()) {
+                System.out.println(EscapeSequences.SET_TEXT_COLOR_YELLOW
+                        + "No games available to join." + EscapeSequences.RESET_TEXT_COLOR);
+                return;
+            }
+            printGames(games);
+
+            GameData selected = selectGame(games, "to play");
+            if (selected == null) {
+                return;
+            }
+
+            System.out.print("Choose color " + EscapeSequences.SET_TEXT_COLOR_GREEN
+                    + "WHITE" + EscapeSequences.RESET_TEXT_COLOR + " or "
+                    + EscapeSequences.SET_TEXT_COLOR_GREEN + "BLACK"
+                    + EscapeSequences.RESET_TEXT_COLOR + ": ");
+            String color = scanner.nextLine().trim().toUpperCase();
+            if (!color.equals("WHITE") && !color.equals("BLACK")) {
+                System.out.println(EscapeSequences.SET_TEXT_COLOR_YELLOW
+                        + "Invalid color." + EscapeSequences.RESET_TEXT_COLOR);
+                return;
+            }
+
+            JoinGameResponse joinResp = facade.joinGame(
+                    selected.gameID(), color, authToken);
+            System.out.println(EscapeSequences.SET_TEXT_COLOR_YELLOW
+                    + "Joined game " + selected.gameName() + " as " + color + EscapeSequences.RESET_TEXT_COLOR);
+
+            new GameplayClient(selected.gameID(), color).drawInitialBoard();
+            System.out.println("Returning to home menu.");
+        } catch (ResponseException e) {
+            printError(e);
+        }
+    }
+
+    private void handleObserve() {
+        try {
+            List<GameData> games = getGameList();
+            if (games.isEmpty()) {
+                System.out.println(EscapeSequences.SET_TEXT_COLOR_YELLOW
+                        + "No games available to observe." + EscapeSequences.RESET_TEXT_COLOR);
+                return;
+            }
+            printGames(games);
+
+            GameData selected = selectGame(games, "to observe");
+            if (selected == null) {
+                return;
+            }
+
+            System.out.println(EscapeSequences.SET_TEXT_COLOR_YELLOW
+                    + "Observing game: " + selected.gameName() + EscapeSequences.RESET_TEXT_COLOR);
+
+            new GameplayClient(selected.gameID(), "OBSERVER").drawInitialBoard();
+            System.out.println("Returning to home menu.");
+        } catch (ResponseException e) {
+            printError(e);
         }
     }
 
