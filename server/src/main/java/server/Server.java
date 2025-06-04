@@ -65,11 +65,11 @@ public class Server {
             String method = req.requestMethod();
 
             // open endpoints (no token required)
-            if ("POST".equals(method)   && "/clear".equals(path))   return;
-            if ("DELETE".equals(method) && "/db".equals(path))      return;
-            if ("POST".equals(method)   && "/user".equals(path))    return;
-            if ("POST".equals(method)   && "/session".equals(path)) return;
-            if ("DELETE".equals(method) && "/session".equals(path)) return;
+            if ("POST".equals(method)   && "/clear".equals(path)) {return;}
+            if ("DELETE".equals(method) && "/db".equals(path)) {return;}
+            if ("POST".equals(method)   && "/user".equals(path)) {return;}
+            if ("POST".equals(method)   && "/session".equals(path)) {return;}
+            if ("DELETE".equals(method) && "/session".equals(path)) {return;}
 
             // everything else requires a token
             String token = req.headers("Authorization");
