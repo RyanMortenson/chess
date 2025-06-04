@@ -18,22 +18,7 @@ public class PreLoginClient {
 
     public void run() {
         Scanner scanner = new Scanner(System.in);
-
-        System.out.println(EscapeSequences.SET_TEXT_COLOR_BLUE + "♕ Welcome to Chess ♕ \n"
-                + EscapeSequences.SET_TEXT_COLOR_YELLOW+ " Sign in to start. \n" + EscapeSequences.RESET_TEXT_COLOR);
-        System.out.println("Options:");
-        System.out.println(EscapeSequences.SET_TEXT_COLOR_GREEN
-                + "\"r\""
-                + EscapeSequences.RESET_TEXT_COLOR + " ~~ Register New Account");
-        System.out.println(EscapeSequences.SET_TEXT_COLOR_GREEN
-                + "\"l\""
-                + EscapeSequences.RESET_TEXT_COLOR + " ~~ Login to Existing Account");
-        System.out.println(EscapeSequences.SET_TEXT_COLOR_GREEN
-                + "\"q\""
-                + EscapeSequences.RESET_TEXT_COLOR + " ~~ Quit Program");
-        System.out.println(EscapeSequences.SET_TEXT_COLOR_GREEN
-                + "\"help\""
-                + EscapeSequences.RESET_TEXT_COLOR + " ~~ List these Commands");
+        helpHelper();
 
         while (true) {
             System.out.print(EscapeSequences.SET_TEXT_COLOR_CYAN + "Chess login >>> "
@@ -47,21 +32,7 @@ public class PreLoginClient {
 
             switch (command) {
                 case "help" -> {
-                    System.out.println(EscapeSequences.SET_TEXT_COLOR_BLUE + "♕ Welcome to Chess ♕ \n"
-                            + EscapeSequences.SET_TEXT_COLOR_YELLOW+ " Sign in to start. \n" + EscapeSequences.RESET_TEXT_COLOR);
-                    System.out.println("Options:");
-                    System.out.println(EscapeSequences.SET_TEXT_COLOR_GREEN
-                            + "\"r\""
-                            + EscapeSequences.RESET_TEXT_COLOR + " ~~ Register New Account");
-                    System.out.println(EscapeSequences.SET_TEXT_COLOR_GREEN
-                            + "\"l\""
-                            + EscapeSequences.RESET_TEXT_COLOR + " ~~ Login to Existing Account");
-                    System.out.println(EscapeSequences.SET_TEXT_COLOR_GREEN
-                            + "\"q\""
-                            + EscapeSequences.RESET_TEXT_COLOR + " ~~ Quit Program");
-                    System.out.println(EscapeSequences.SET_TEXT_COLOR_GREEN
-                            + "\"help\""
-                            + EscapeSequences.RESET_TEXT_COLOR + " ~~ List these Commands");
+                    helpHelper();
                 }
 
                 case "q" -> {
@@ -149,5 +120,25 @@ public class PreLoginClient {
             // If it isn't valid json
         }
         return e.getMessage();
+    }
+
+
+    //helper for "help command"
+    private void helpHelper() {
+        System.out.println(EscapeSequences.SET_TEXT_COLOR_BLUE + "♕ Welcome to Chess ♕ \n"
+                + EscapeSequences.SET_TEXT_COLOR_YELLOW+ " Sign in to start. \n" + EscapeSequences.RESET_TEXT_COLOR);
+        System.out.println("Options:");
+        System.out.println(EscapeSequences.SET_TEXT_COLOR_GREEN
+                + "\"r\""
+                + EscapeSequences.RESET_TEXT_COLOR + " ~~ Register New Account");
+        System.out.println(EscapeSequences.SET_TEXT_COLOR_GREEN
+                + "\"l\""
+                + EscapeSequences.RESET_TEXT_COLOR + " ~~ Login to Existing Account");
+        System.out.println(EscapeSequences.SET_TEXT_COLOR_GREEN
+                + "\"q\""
+                + EscapeSequences.RESET_TEXT_COLOR + " ~~ Quit Program");
+        System.out.println(EscapeSequences.SET_TEXT_COLOR_GREEN
+                + "\"help\""
+                + EscapeSequences.RESET_TEXT_COLOR + " ~~ List these Commands");
     }
 }
