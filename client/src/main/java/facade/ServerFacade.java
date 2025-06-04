@@ -31,7 +31,6 @@ public class ServerFacade {
 
 
     public void logout(String authToken) throws ResponseException {
-        // pass responseClass=null since we expect no JSON on success
         makeRequest("DELETE", "/session", null, null, authToken);
     }
 
@@ -77,7 +76,6 @@ public class ServerFacade {
                 connection.setRequestProperty("Authorization", authToken);
             }
 
-            // if we have a request object, then we serialize it into a JSON
             if (requestObj != null) {
                 connection.setDoOutput(true);
                 connection.setRequestProperty("Content-Type", "application/json; charset=UTF-8");
@@ -127,7 +125,7 @@ public class ServerFacade {
         } catch (ResponseException e) {
             throw e;
         } catch (Exception e) {
-            // any other checked exception (e.g. URISyntaxException)
+            // any other checked exception
             throw new ResponseException(500, e.getMessage());
         } finally {
             if (connection != null) {
