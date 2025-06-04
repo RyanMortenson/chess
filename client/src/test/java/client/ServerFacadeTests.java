@@ -112,6 +112,14 @@ public class ServerFacadeTests {
         assertDoesNotThrow(() -> facade.logout(token));
     }
 
+    @Test
+    public void logoutFail() {
+        ResponseException e = assertThrows(
+                ResponseException.class,
+                () -> facade.logout("fakeAuthToken")
+        );
+        assertEquals(401, e.getStatusCode(), "Should be 401 for invalid token");
+    }
 
 
     // createGame ----------------------------------------------------------------------------

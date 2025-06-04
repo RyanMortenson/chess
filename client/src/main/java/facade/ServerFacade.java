@@ -49,7 +49,7 @@ public class ServerFacade {
 
     public JoinGameResponse joinGame(int gameID, String playerColor, String authToken) throws ResponseException {
         JoinGameRequest body = new JoinGameRequest(gameID, playerColor);
-        return makeRequest("PUT", "/game", body, JoinGameResponse.class, null);
+        return makeRequest("PUT", "/game", body, JoinGameResponse.class, authToken);
     }
 
 
