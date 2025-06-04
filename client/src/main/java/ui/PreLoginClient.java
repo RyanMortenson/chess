@@ -23,20 +23,21 @@ public class PreLoginClient {
                 + EscapeSequences.SET_TEXT_COLOR_YELLOW+ " Sign in to start. \n" + EscapeSequences.RESET_TEXT_COLOR);
         System.out.println("Options:");
         System.out.println(EscapeSequences.SET_TEXT_COLOR_GREEN
-                + "register"
-                + EscapeSequences.RESET_TEXT_COLOR + " ~~ Create Account");
+                + "\"r\""
+                + EscapeSequences.RESET_TEXT_COLOR + " ~~ Register New Account");
         System.out.println(EscapeSequences.SET_TEXT_COLOR_GREEN
-                + "login"
-                + EscapeSequences.RESET_TEXT_COLOR + " ~~ Play Chess");
+                + "\"l\""
+                + EscapeSequences.RESET_TEXT_COLOR + " ~~ Login to Existing Account");
         System.out.println(EscapeSequences.SET_TEXT_COLOR_GREEN
-                + "quit"
-                + EscapeSequences.RESET_TEXT_COLOR + " ~~ Quit Chess");
+                + "\"q\""
+                + EscapeSequences.RESET_TEXT_COLOR + " ~~ Quit Program");
         System.out.println(EscapeSequences.SET_TEXT_COLOR_GREEN
-                + "help"
-                + EscapeSequences.RESET_TEXT_COLOR + " ~~ List Commands");
+                + "\"help\""
+                + EscapeSequences.RESET_TEXT_COLOR + " ~~ List these Commands");
 
         while (true) {
-            System.out.print(EscapeSequences.SET_TEXT_COLOR_CYAN + "Chess login >>> " + EscapeSequences.RESET_TEXT_COLOR);
+            System.out.print(EscapeSequences.SET_TEXT_COLOR_CYAN + "Chess login >>> "
+                    + EscapeSequences.RESET_TEXT_COLOR);
             String command = scanner.nextLine().trim().toLowerCase();
 
             if (command.isEmpty()) {
@@ -46,28 +47,30 @@ public class PreLoginClient {
 
             switch (command) {
                 case "help" -> {
+                    System.out.println(EscapeSequences.SET_TEXT_COLOR_BLUE + "♕ Welcome to Chess ♕ \n"
+                            + EscapeSequences.SET_TEXT_COLOR_YELLOW+ " Sign in to start. \n" + EscapeSequences.RESET_TEXT_COLOR);
                     System.out.println("Options:");
                     System.out.println(EscapeSequences.SET_TEXT_COLOR_GREEN
-                            + "register"
-                            + EscapeSequences.RESET_TEXT_COLOR + " ~~ Create Account");
+                            + "\"r\""
+                            + EscapeSequences.RESET_TEXT_COLOR + " ~~ Register New Account");
                     System.out.println(EscapeSequences.SET_TEXT_COLOR_GREEN
-                            + "login"
-                            + EscapeSequences.RESET_TEXT_COLOR + " ~~ Play Chess");
+                            + "\"l\""
+                            + EscapeSequences.RESET_TEXT_COLOR + " ~~ Login to Existing Account");
                     System.out.println(EscapeSequences.SET_TEXT_COLOR_GREEN
-                            + "quit"
-                            + EscapeSequences.RESET_TEXT_COLOR + " ~~ Quit Chess");
+                            + "\"q\""
+                            + EscapeSequences.RESET_TEXT_COLOR + " ~~ Quit Program");
                     System.out.println(EscapeSequences.SET_TEXT_COLOR_GREEN
-                            + "help"
-                            + EscapeSequences.RESET_TEXT_COLOR + " ~~ List Commands");
+                            + "\"help\""
+                            + EscapeSequences.RESET_TEXT_COLOR + " ~~ List these Commands");
                 }
 
-                case "quit" -> {
+                case "q" -> {
                     System.out.println("Goodbye!");
                     scanner.close();
                     return;
                 }
 
-                case "register" -> {
+                case "r" -> {
                     System.out.print("Username: ");
                     String username = scanner.nextLine().trim();
                     System.out.print("Password: ");
@@ -96,7 +99,7 @@ public class PreLoginClient {
                     }
                 }
 
-                case "login" -> {
+                case "l" -> {
                     System.out.print("Username: ");
                     String username = scanner.nextLine().trim();
                     System.out.print("Password: ");
@@ -107,7 +110,7 @@ public class PreLoginClient {
                         LoginResponse resp = facade.login(req);
                         System.out.println(EscapeSequences.SET_TEXT_COLOR_BLUE + "Logged in as "
                                 + EscapeSequences.SET_TEXT_COLOR_YELLOW
-                                + resp.username()
+                                + resp.username() + "\n"
                                 + EscapeSequences.RESET_TEXT_COLOR);
                         String token = resp.authToken();
 
@@ -115,7 +118,6 @@ public class PreLoginClient {
                         new PostLoginClient(facade, token).run();
 
                         // back to PreLoginClient
-                        System.out.println("You have been logged out.\n");
                     } catch (ResponseException e) {
                         System.out.println(EscapeSequences.SET_TEXT_COLOR_RED
                                 + extractErrorMessage(e)
@@ -127,7 +129,7 @@ public class PreLoginClient {
                         + "Unknown command."
                         + EscapeSequences.RESET_TEXT_COLOR
                         + " Type "
-                        + EscapeSequences.SET_TEXT_COLOR_CYAN
+                        + EscapeSequences.SET_TEXT_COLOR_GREEN
                         + "help"
                         + EscapeSequences.RESET_TEXT_COLOR
                         + " to see options.");

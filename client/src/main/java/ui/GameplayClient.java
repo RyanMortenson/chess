@@ -4,12 +4,10 @@ import static ui.EscapeSequences.*;
 
 public class GameplayClient {
 
-    private final int gameID;
     private final String perspective; // WHITE, BLACK, or OBSERVER
 
 
     public GameplayClient(int gameID, String perspective) {
-        this.gameID = gameID;
         this.perspective = perspective;
     }
 
@@ -49,13 +47,24 @@ public class GameplayClient {
         board[1][7] = WHITE_KNIGHT;
         board[1][8] = WHITE_ROOK;
 
+
+        for (int r = 3; r <= 6; r++) {
+            for (int c = 1; c <= 8; c++) {
+                board[r][c] = EMPTY;
+            }
+        }
+
         boolean flip = perspective.equalsIgnoreCase("BLACK");
 
         // Column labels
         if (!flip) {
-            System.out.println("    a   b   c   d   e   f   g   h");
+            System.out.println(SET_BG_COLOR_BLUE + SET_TEXT_COLOR_BLACK + SET_TEXT_BOLD
+                    + "    a  b  c  d  e  f  g  h    "
+                    + RESET_TEXT_COLOR + RESET_BG_COLOR + RESET_TEXT_BOLD_FAINT);
         } else {
-            System.out.println("    h   g   f   e   d   c   b   a");
+            System.out.println(SET_BG_COLOR_BLUE + SET_TEXT_COLOR_BLACK + SET_TEXT_BOLD
+                    + "    h  g  f  e  d  c  b  a    "
+                    + RESET_TEXT_COLOR + RESET_BG_COLOR + RESET_TEXT_BOLD_FAINT);
         }
 
         // Draw rows
@@ -65,7 +74,11 @@ public class GameplayClient {
                     : rank;      // false
             // Each row: row number then 8 squares then rank number
             StringBuilder row = new StringBuilder();
-            row.append(displayRank).append("  ");
+
+            row.append(SET_BG_COLOR_BLUE + SET_TEXT_COLOR_BLACK + SET_TEXT_BOLD).append(" ")
+                    .append(displayRank).append(" ").append(RESET_TEXT_COLOR)
+                    .append(RESET_BG_COLOR).append(RESET_TEXT_BOLD_FAINT);
+
             for (int file = 1; file <= 8; file++) {
                 int f = flip ? (9 - file) : file;
                 int r = flip ? (9 - rank) : rank;
@@ -79,8 +92,8 @@ public class GameplayClient {
                 // Determine piece and its color
                 String piece = board[r][f];
                 String fgColoredPiece;
-                if (piece.equals(" ")) {
-                    // Empty, just show two spaces prefixed by a space
+                if (piece.equals(EMPTY)) {
+
                     fgColoredPiece = "  ";
                 } else {
                     if (piece.equals(WHITE_PAWN) || piece.equals(WHITE_ROOK) ||
@@ -91,7 +104,7 @@ public class GameplayClient {
                         fgColoredPiece = EscapeSequences.SET_TEXT_COLOR_BLACK + piece + EscapeSequences.SET_TEXT_COLOR_BLACK;
                     }
 
-                    fgColoredPiece = "   " + fgColoredPiece;
+                    fgColoredPiece = " " + fgColoredPiece;
                 }
 
                 row.append(bgColor)
@@ -100,19 +113,23 @@ public class GameplayClient {
                         .append(EscapeSequences.RESET_TEXT_COLOR)
                         .append(EscapeSequences.RESET_BG_COLOR);
             }
-            row.append("  ").append(displayRank);
+            row.append(SET_BG_COLOR_BLUE + SET_TEXT_COLOR_BLACK + SET_TEXT_BOLD).append(" ")
+                    .append(displayRank).append(" ").append(RESET_TEXT_COLOR)
+                    .append(RESET_BG_COLOR).append(RESET_TEXT_BOLD_FAINT);
             System.out.println(row.toString());
         }
 
         // Column labels again
         if (!flip) {
-            System.out.println("    a   b   c   d   e   f   g   h");
+            System.out.println(SET_BG_COLOR_BLUE + SET_TEXT_COLOR_BLACK + SET_TEXT_BOLD
+                    + "    a  b  c  d  e  f  g  h    " + RESET_TEXT_COLOR + RESET_BG_COLOR + RESET_TEXT_BOLD_FAINT);
         } else {
-            System.out.println("    h   g   f   e   d   c   b   a");
+            System.out.println(SET_BG_COLOR_BLUE + SET_TEXT_COLOR_BLACK + SET_TEXT_BOLD
+                    + "    h  g  f  e  d  c  b  a    " + RESET_TEXT_COLOR + RESET_BG_COLOR + RESET_TEXT_BOLD_FAINT);
         }
 
         System.out.println(EscapeSequences.SET_TEXT_COLOR_CYAN
-                + "\n(Initial position of game " + gameID + ")"
+                + "\n(Initial position of game)\n"
                 + EscapeSequences.RESET_TEXT_COLOR);
     }
 }
