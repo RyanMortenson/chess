@@ -16,7 +16,7 @@ public class PostLoginClient {
     private final String authToken;
     private final Scanner scanner = new Scanner(System.in);
 
-    // Format string for listing games
+    // Format for listing games
     private static final String GAME_LIST_FORMAT = EscapeSequences.SET_TEXT_COLOR_GREEN + "%d  "
             + EscapeSequences.RESET_TEXT_COLOR + "Name: "
             + EscapeSequences.SET_TEXT_COLOR_BLUE + "%s   "
@@ -70,7 +70,7 @@ public class PostLoginClient {
             System.out.println(EscapeSequences.SET_TEXT_COLOR_YELLOW + "Logged out.\n"
                     + EscapeSequences.RESET_TEXT_COLOR);
         } catch (ResponseException e) {
-            printError(e);
+            ClientUtils.printError(e);
         }
     }
 
@@ -87,7 +87,7 @@ public class PostLoginClient {
             System.out.println(EscapeSequences.SET_TEXT_COLOR_YELLOW
                     + "Game created: " + gameName + EscapeSequences.RESET_TEXT_COLOR);
         } catch (ResponseException e) {
-            printError(e);
+            ClientUtils.printError(e);
         }
     }
 
@@ -101,7 +101,7 @@ public class PostLoginClient {
                 printGames(games);
             }
         } catch (ResponseException e) {
-            printError(e);
+            ClientUtils.printError(e);
         }
     }
 
@@ -139,7 +139,7 @@ public class PostLoginClient {
             new GameplayClient(selected.gameID(), color).drawInitialBoard();
             System.out.println("Returning to home menu.");
         } catch (ResponseException e) {
-            printError(e);
+            ClientUtils.printError(e);
         }
     }
 
@@ -164,7 +164,7 @@ public class PostLoginClient {
             new GameplayClient(selected.gameID(), "OBSERVER").drawInitialBoard();
             System.out.println("Returning to home menu.");
         } catch (ResponseException e) {
-            printError(e);
+            ClientUtils.printError(e);
         }
     }
 
@@ -225,25 +225,4 @@ public class PostLoginClient {
             return null;
         }
     }
-
-    // Prints the error message from a ResponseException in red
-    private void printError(ResponseException e) {
-        System.out.println(EscapeSequences.SET_TEXT_COLOR_RED
-                + extractErrorMessage(e) + EscapeSequences.RESET_TEXT_COLOR);
-    }
-
-    // GSON parser helper:
-    private String extractErrorMessage(ResponseException e) {
-        try {
-            com.google.gson.JsonObject obj = new com.google.gson.Gson()
-                    .fromJson(e.getMessage(), com.google.gson.JsonObject.class);
-            if (obj.has("message")) {
-                return obj.get("message").getAsString();
-            }
-        } catch (com.google.gson.JsonSyntaxException ex) {
-            // If it isn't valid JSON
-        }
-        return e.getMessage();
-    }
-
 }

@@ -29,7 +29,6 @@ public class PreLoginClient {
                 continue;
             }
 
-
             switch (command) {
                 case "help" -> {
                     helpHelper();
@@ -58,15 +57,11 @@ public class PreLoginClient {
                                 + EscapeSequences.RESET_TEXT_COLOR + "\n");
                         String token = resp.authToken();
 
-                        // transition to PostLoginClient
                         new PostLoginClient(facade, token).run();
 
-                        // back to PreLoginClient
                         System.out.println("You have been logged out.\n");
                     } catch (ResponseException e) {
-                        System.out.println(EscapeSequences.SET_TEXT_COLOR_RED
-                                + extractErrorMessage(e)
-                                + EscapeSequences.RESET_TEXT_COLOR);
+                        ClientUtils.printError(e);
                     }
                 }
 
@@ -85,14 +80,9 @@ public class PreLoginClient {
                                 + EscapeSequences.RESET_TEXT_COLOR);
                         String token = resp.authToken();
 
-                        // transition to PostLoginClient
                         new PostLoginClient(facade, token).run();
-
-                        // back to PreLoginClient
                     } catch (ResponseException e) {
-                        System.out.println(EscapeSequences.SET_TEXT_COLOR_RED
-                                + extractErrorMessage(e)
-                                + EscapeSequences.RESET_TEXT_COLOR);
+                        ClientUtils.printError(e);
                     }
                 }
 
@@ -108,22 +98,6 @@ public class PreLoginClient {
         }
     }
 
-    // GSON parser helper:
-    private String extractErrorMessage(ResponseException e) {
-        try {
-            com.google.gson.JsonObject obj = new com.google.gson.Gson()
-                    .fromJson(e.getMessage(), com.google.gson.JsonObject.class);
-            if (obj.has("message")) {
-                return obj.get("message").getAsString();
-            }
-        } catch (com.google.gson.JsonSyntaxException ex) {
-            // If it isn't valid json
-        }
-        return e.getMessage();
-    }
-
-
-    //helper for "help command"
     private void helpHelper() {
         System.out.println(EscapeSequences.SET_TEXT_COLOR_BLUE + "♕ Welcome to Chess ♕ \n"
                 + EscapeSequences.SET_TEXT_COLOR_YELLOW+ " Sign in to start. \n" + EscapeSequences.RESET_TEXT_COLOR);
