@@ -14,6 +14,11 @@ public class ServerFacadeTests {
     private static Server server;
     private static ServerFacade facade;
 
+    // Global variables so I have less boilerplate
+    private String username = "Ryno";
+    private String password = "Morto";
+    private String email = "rynomorto@cool.com";
+
     @BeforeAll
     public void init() {
         // 1) Start the embedded test server on a random port
@@ -32,23 +37,14 @@ public class ServerFacadeTests {
     }
 
     @BeforeEach
-    public void clearServer() {
-        try {
-            facade.clear();
-        } catch (ResponseException e) {
-            // If /clear returns 401 or any other failure, just swallow it.
-            // In other words, if clear() is “unauthorized,” we skip it rather than fail the test.
-            System.out.println("Warning: clear() failed with “" + e.getMessage() + "” – continuing anyway.");
-        }
+    public void clearServer() throws ResponseException {
+        facade.clear();
     }
 
-    // register
+    // register ----------------------------------------------------------------------------
 
     @Test
     public void registerSuccess() throws ResponseException {
-        String username = "Ryno";
-        String password = "Morto";
-        String email    = "rynomorto@cool.com";
 
         RegisterRequest req = new RegisterRequest(username, password, email);
         RegisterResponse resp = facade.register(req);
@@ -61,9 +57,6 @@ public class ServerFacadeTests {
 
     @Test
     public void registerDuplicateUsernameFails() throws ResponseException {
-        String username = "John";
-        String password = "pw";
-        String email    = "john@cool.com";
 
         RegisterRequest firstReq = new RegisterRequest(username, password, email);
         RegisterResponse firstResp = facade.register(firstReq);
@@ -71,7 +64,7 @@ public class ServerFacadeTests {
         assertNotNull(firstResp.authToken(), "First registration should succeed");
 
         //Registering again with same username should throw 403
-        RegisterRequest secondReq = new RegisterRequest(username, "newPw", "john2@cool.com");
+        RegisterRequest secondReq = new RegisterRequest(username, "newPw", "newEmail@cool.com");
         ResponseException e = assertThrows(
                 ResponseException.class,
                 () -> facade.register(secondReq),
@@ -80,13 +73,10 @@ public class ServerFacadeTests {
         assertEquals(403, e.getStatusCode(), "Expected HTTP 403 for duplicate username");
     }
 
-    // login
+    // login ----------------------------------------------------------------------------
 
     @Test
     public void loginSuccess() throws ResponseException {
-        String username = "Ryno";
-        String password = "Morto";
-        String email = "rynomorto@cool.com";
 
         RegisterRequest registerRequest = new RegisterRequest(username, password, email);
         facade.register(registerRequest);
@@ -101,10 +91,7 @@ public class ServerFacadeTests {
     }
 
     @Test
-    public void loginFail() throws  ResponseException {
-        String username = "Ryno";
-        String password = "Morto";
-        String email = "rynomorto@cool.com";
+    public void loginFail() throws ResponseException {
 
         RegisterRequest registerRequest = new RegisterRequest(username, password, email);
         facade.register(registerRequest);
@@ -117,28 +104,99 @@ public class ServerFacadeTests {
         assertEquals(401, e.getStatusCode(), "Expect 401 for unauthorized");
     }
 
-
-    // createGame
+    // logout ----------------------------------------------------------------------------
 
     @Test
-    public void createGameSuccess() throws Exception {
-        String username = "Ryno";
-        String password = "Morto";
-        String email = "rynomorto@cool.com";
+    public void logoutSuccess() throws ResponseException {
+        String token = registerHelper();
+        assertDoesNotThrow(() -> facade.logout(token));
+    }
+
+
+
+    // createGame ----------------------------------------------------------------------------
+
+    @Test
+    public void createGameSuccess() throws ResponseException {
+        String token = registerHelper();
+        CreateGameResponse resp = facade.createGame("Game1", token);
+        assertTrue(resp.gameID() > 0, "Created gameID should be positive");
+
+    }
+
+    @Test
+    public void createGameFail() {
+        // Passing an invalid token produces a 401
+        ResponseException e = assertThrows(
+                ResponseException.class,
+                () -> facade.createGame("BadGame", "invalidToken"),
+                "Invalid token should throw ResponseException"
+        );
+        assertEquals(401, e.getStatusCode(), "Expect HTTP 401 for invalid token");
+    }
+
+
+    // listGame ----------------------------------------------------------------------------
+
+    @Test
+    public void listGameSuccess() throws ResponseException {
+        String token = registerHelper();
+
+        ListGamesResponse listResp = facade.listGames(token);
+        assertNotNull(listResp, "List games should not be null");
+        assertNotNull(listResp.games(), "Games list should not be null");
+        assertTrue(listResp.games().isEmpty(), "there should not be any games yet");
+    }
+
+    @Test
+    public void listGamesFail() throws ResponseException {
+        String token = registerHelper();
+
+        //create a game
+        facade.createGame("testGame", token);
+
+        ListGamesResponse listResp = facade.listGames(token);
+        assertNotNull(listResp.games(), "Games list should not be null");
+        assertEquals(1, listResp.games().size(), "There should be 1 game exactly");
+        GameData data = listResp.games().getFirst();
+        assertEquals("testGame", data.gameName(), "Game name should match");
+    }
+
+
+    // joinGame ----------------------------------------------------------------------------
+
+    @Test
+    public void joinGameSuccess() throws ResponseException {
+        String token = registerHelper();
+
+        CreateGameResponse created = facade.createGame("joinTest", token);
+        JoinGameResponse joinResp = facade.joinGame(created.gameID(), "WHITE", token);
+
+        assertNotNull(joinResp, "joinGameResponse shouldn't be null");
+    }
+
+    @Test
+    public void joinGameFail() throws ResponseException {
+        String token = registerHelper();
+
+        CreateGameResponse createdGame = facade.createGame("joinTest", token);
+
+        ResponseException e = assertThrows(
+                ResponseException.class,
+                () -> facade.joinGame(createdGame.gameID(), "BLACK", "badToken")
+        );
+
+        assertEquals(401, e.getStatusCode());
+    }
+
+
+
+    //Helper for registering returns token
+    private String registerHelper() throws ResponseException {
         facade.register(new RegisterRequest(username, password, email));
-        var loginResp = facade.login(new LoginRequest(username, password));
-        var req  = new CreateGameRequest("Game1", loginResp.authToken());
-        var resp = facade.createGame(req);
-        assertTrue(resp.gameID() > 0);
+        LoginResponse login = facade.login(new LoginRequest(username, password));
+        return login.authToken();
     }
-
-    @Test
-    public void createGameWithInvalidTokenFails() {
-        assertThrows(ResponseException.class, () -> {
-            var req = new CreateGameRequest("BadGame", "invalidToken");
-            facade.createGame(req);
-        });
-    }
-
-
 }
+
+

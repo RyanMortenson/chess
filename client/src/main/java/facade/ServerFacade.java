@@ -36,8 +36,9 @@ public class ServerFacade {
     }
 
 
-    public CreateGameResponse createGame(CreateGameRequest req) throws ResponseException {
-        return makeRequest("POST", "/game", req, CreateGameResponse.class, null);
+    public CreateGameResponse createGame(String gameName, String authToken) throws ResponseException {
+        CreateGameRequest body = new CreateGameRequest(gameName);
+        return makeRequest("POST", "/game", body, CreateGameResponse.class, authToken);
     }
 
 
@@ -46,8 +47,9 @@ public class ServerFacade {
     }
 
 
-    public JoinGameResponse joinGame(JoinGameRequest req) throws ResponseException {
-        return makeRequest("PUT", "/game", req, JoinGameResponse.class, null);
+    public JoinGameResponse joinGame(int gameID, String playerColor, String authToken) throws ResponseException {
+        JoinGameRequest body = new JoinGameRequest(gameID, playerColor);
+        return makeRequest("PUT", "/game", body, JoinGameResponse.class, null);
     }
 
 
