@@ -15,9 +15,9 @@ public class ServerFacadeTests {
     private static ServerFacade facade;
 
     // Global variables so I have less boilerplate
-    private String username = "Ryno";
-    private String password = "Morto";
-    private String email = "rynomorto@cool.com";
+    private final String username = "Ryno";
+    private final String password = "Morto";
+    private final String email = "rynomorto@cool.com";
 
     @BeforeAll
     public void init() {
@@ -53,6 +53,7 @@ public class ServerFacadeTests {
         assertNotNull(resp.authToken(), "authToken should not be null");
         assertFalse(resp.authToken().isEmpty(), "authToken should not be empty");
         assertEquals(username, resp.username(), "Username in response must match request");
+        facade.clear();
     }
 
     @Test
@@ -71,6 +72,7 @@ public class ServerFacadeTests {
                 "if duplicate username was registered, e = 403"
         );
         assertEquals(403, e.getStatusCode(), "Expected HTTP 403 for duplicate username");
+        facade.clear();
     }
 
     // login ----------------------------------------------------------------------------
@@ -88,6 +90,7 @@ public class ServerFacadeTests {
         assertNotNull(loginResponse.authToken(), "authToken should not be null");
         assertFalse(loginResponse.authToken().isEmpty(), "authToken should not be empty");
         assertEquals(username, loginResponse.username(), "usernames should match");
+        facade.clear();
     }
 
     @Test
@@ -102,6 +105,7 @@ public class ServerFacadeTests {
                 () -> facade.login(badLogin), "Wrong password should throw ResponseException"
         );
         assertEquals(401, e.getStatusCode(), "Expect 401 for unauthorized");
+        facade.clear();
     }
 
     // logout ----------------------------------------------------------------------------
@@ -110,15 +114,17 @@ public class ServerFacadeTests {
     public void logoutSuccess() throws ResponseException {
         String token = registerHelper();
         assertDoesNotThrow(() -> facade.logout(token));
+        facade.clear();
     }
 
     @Test
-    public void logoutFail() {
+    public void logoutFail() throws ResponseException {
         ResponseException e = assertThrows(
                 ResponseException.class,
                 () -> facade.logout("fakeAuthToken")
         );
         assertEquals(401, e.getStatusCode(), "Should be 401 for invalid token");
+        facade.clear();
     }
 
 
@@ -129,11 +135,12 @@ public class ServerFacadeTests {
         String token = registerHelper();
         CreateGameResponse resp = facade.createGame("Game1", token);
         assertTrue(resp.gameID() > 0, "Created gameID should be positive");
+        facade.clear();
 
     }
 
     @Test
-    public void createGameFail() {
+    public void createGameFail() throws ResponseException {
         // Passing an invalid token produces a 401
         ResponseException e = assertThrows(
                 ResponseException.class,
@@ -141,6 +148,7 @@ public class ServerFacadeTests {
                 "Invalid token should throw ResponseException"
         );
         assertEquals(401, e.getStatusCode(), "Expect HTTP 401 for invalid token");
+        facade.clear();
     }
 
 
@@ -154,6 +162,7 @@ public class ServerFacadeTests {
         assertNotNull(listResp, "List games should not be null");
         assertNotNull(listResp.games(), "Games list should not be null");
         assertTrue(listResp.games().isEmpty(), "there should not be any games yet");
+        facade.clear();
     }
 
     @Test
@@ -168,6 +177,7 @@ public class ServerFacadeTests {
         assertEquals(1, listResp.games().size(), "There should be 1 game exactly");
         GameData data = listResp.games().getFirst();
         assertEquals("testGame", data.gameName(), "Game name should match");
+        facade.clear();
     }
 
 
@@ -181,6 +191,7 @@ public class ServerFacadeTests {
         JoinGameResponse joinResp = facade.joinGame(created.gameID(), "WHITE", token);
 
         assertNotNull(joinResp, "joinGameResponse shouldn't be null");
+        facade.clear();
     }
 
     @Test
@@ -195,6 +206,7 @@ public class ServerFacadeTests {
         );
 
         assertEquals(401, e.getStatusCode());
+        facade.clear();
     }
 
 

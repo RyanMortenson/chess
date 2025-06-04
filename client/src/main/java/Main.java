@@ -1,8 +1,12 @@
 import chess.*;
 
+import ui.PreLoginClient;
+
 public class Main {
     public static void main(String[] args) {
-        var piece = new ChessPiece(ChessGame.TeamColor.WHITE, ChessPiece.PieceType.PAWN);
-        System.out.println("♕ 240 Chess Client: " + piece);
+        int port = (args.length > 0) ? Integer.parseInt(args[0]) : 8080;
+        String baseUrl = "http://localhost:" + port;
+
+        new PreLoginClient(baseUrl).run();
     }
 }
