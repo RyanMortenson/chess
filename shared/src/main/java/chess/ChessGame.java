@@ -53,6 +53,10 @@ public class ChessGame {
 
 
     public void makeMove(ChessMove move) throws InvalidMoveException {
+        if (isGameOver()) {
+            throw new InvalidMoveException("The game is over.");
+        }
+
         ChessPiece piece = board.getPiece(move.getStartPosition());
         if (piece == null) {
             throw new InvalidMoveException("No valid moves.");
@@ -148,6 +152,18 @@ public class ChessGame {
     public ChessBoard getBoard() {
         return board;
     }
+
+
+    private boolean gameOver = false;
+
+    public boolean isGameOver() {
+        return gameOver;
+    }
+
+    public void setGameOver(boolean gameOver) {
+        this.gameOver = gameOver;
+    }
+
 
     @Override
     public boolean equals(Object o) {
