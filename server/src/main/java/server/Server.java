@@ -10,6 +10,7 @@ import service.GameService;
 import service.DBService;
 import service.exceptions.UnauthorizedException;
 import spark.Spark;
+import server.websocket.WebSocketHandler;
 
 import java.util.Map;
 
@@ -42,7 +43,11 @@ public class Server {
         }
 
         port(desiredPort);
+
+        webSocket("/ws", server.websocket.WebSocketHandler.class);
         staticFiles.location("web");
+
+        System.out.println("Registering WebSocket");
 
 
         post("/clear", (req, res) -> {
@@ -61,18 +66,24 @@ public class Server {
 
 
         before((req, res) -> {
+            if ("websocket".equalsIgnoreCase(req.headers("Upgrade"))) {
+                return;
+            }
+
             String path   = req.pathInfo();
             String method = req.requestMethod();
 
-            // open endpoints (no token required)
-            if ("POST".equals(method)   && "/clear".equals(path)) {return;}
-            if ("DELETE".equals(method) && "/db".equals(path)) {return;}
-            if ("POST".equals(method)   && "/user".equals(path)) {return;}
-            if ("POST".equals(method)   && "/session".equals(path)) {return;}
-            if ("DELETE".equals(method) && "/session".equals(path)) {return;}
+            if ("POST".equals(method)   && "/clear".equals(path))    return;
+            if ("DELETE".equals(method) && "/db".equals(path))       return;
+            if ("POST".equals(method)   && "/user".equals(path))     return;
+            if ("POST".equals(method)   && "/session".equals(path))  return;
+            if ("DELETE".equals(method) && "/session".equals(path))  return;
 
-            // everything else requires a token
-            String token = req.headers("Authorization");
+
+            String token = req.headers("AuthToken");
+            if (token == null || token.isBlank()) {
+                token = req.headers("Authorization");
+            }
             if (token == null || token.isBlank()) {
                 halt(401, gson.toJson(Map.of("message", "Error: unauthorized")));
             }
@@ -83,6 +94,7 @@ public class Server {
                 halt(401, gson.toJson(Map.of("message", "Error: unauthorized")));
             }
         });
+
 
 
         new UserHandler(userService, gson).registerRoutes();
