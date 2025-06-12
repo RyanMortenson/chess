@@ -55,13 +55,13 @@ public class UserGameCommand {
             return false;
         }
         UserGameCommand that = (UserGameCommand) o;
-        return getCommandType() == that.getCommandType() &&
-                Objects.equals(getAuthToken(), that.getAuthToken()) &&
-                Objects.equals(getGameID(), that.getGameID());
+        return commandType == that.commandType &&
+                Objects.equals(authToken, that.authToken) &&
+                Objects.equals(gameID, that.gameID);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(getCommandType(), getAuthToken(), getGameID());
+        return Objects.hash(commandType, authToken, gameID);
     }
 }
