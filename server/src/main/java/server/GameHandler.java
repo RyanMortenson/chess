@@ -3,6 +3,7 @@ package server;
 import com.google.gson.Gson;
 import com.google.gson.JsonSyntaxException;
 import dataaccess.DataAccessException;
+import model.GameData;
 import service.GameService;
 import service.exceptions.AlreadyTakenException;
 import service.exceptions.NotFoundException;
@@ -14,7 +15,9 @@ import service.results.ListGamesResult;
 import spark.Request;
 import spark.Response;
 
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import static spark.Spark.get;
 import static spark.Spark.post;
@@ -81,10 +84,14 @@ public class GameHandler {
 
         try {
             ListGamesResult result = gameService.listGames(token);
-            // get rid of games that are already over
-            result.games().removeIf(g -> g.game().isGameOver());
+
+            //build new list not including games that are over
+            List<GameData> active = result.games().stream()
+                    .filter(g -> !g.game().isGameOver())
+                    .collect(Collectors.toList());
+
             res.status(200);
-            return gson.toJson(result);
+            return gson.toJson(new ListGamesResult(active));
 
         } catch (DataAccessException e) {
             return mapDataAccessError(res, e);

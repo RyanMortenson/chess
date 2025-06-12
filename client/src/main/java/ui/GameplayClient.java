@@ -24,6 +24,7 @@ public class GameplayClient {
     private final String perspective;
     private WebSocketFacade ws;
     private final int gameID;
+    private boolean gameOver = false;
 
     public GameplayClient(String baseUrl, String authToken, int gameID, String perspective) throws ResponseException {
         this.baseUrl     = baseUrl;
@@ -41,6 +42,12 @@ public class GameplayClient {
             displayHelp();
             ws.sendConnect(authToken, gameID);
             while (true) {
+
+                if (gameOver) {
+                    System.out.println("Game over. Returning to menu");
+                    break;
+                }
+
                 String line = scanner.nextLine().trim();
                 if (line.isEmpty()) {continue;}
 
@@ -225,11 +232,20 @@ public class GameplayClient {
             case NOTIFICATION -> {
                 var note = (NotificationMessage) msg;
                 System.out.println(SET_TEXT_COLOR_YELLOW + note.message + RESET_TEXT_COLOR);
+
+                String m = note.message.toLowerCase();
+                if (m.contains("resigned") || m.contains("checkmated") || m.contains("stalemate")) {
+                    gameOver = true;
+                }
+
                 printPrompt();
             }
             case ERROR -> {
                 var err = (ErrorMessage) msg;
                 System.out.println(SET_TEXT_COLOR_RED + err.errorMessage + RESET_TEXT_COLOR);
+                if (err.errorMessage.toLowerCase().contains("already over")) {
+                    gameOver = true;
+                }
                 printPrompt();
             }
         }
