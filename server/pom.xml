@@ -26,7 +26,7 @@
                 <artifactId>exec-maven-plugin</artifactId>
                 <version>3.1.1</version>
                 <configuration>
-                    <mainClass>Main</mainClass>
+                    <mainClass>ClientMain</mainClass>
                 </configuration>
             </plugin>
             <plugin>
@@ -36,15 +36,11 @@
                 <executions>
                     <execution>
                         <phase>package</phase>
-                        <goals>
-                            <goal>single</goal>
-                        </goals>
+                        <goals><goal>single</goal></goals>
                         <configuration>
                             <archive>
                                 <manifest>
-                                    <mainClass>
-                                        Main
-                                    </mainClass>
+                                    <mainClass>ClientMain</mainClass>
                                 </manifest>
                             </archive>
                             <descriptors>
@@ -54,9 +50,16 @@
                     </execution>
                 </executions>
             </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.11.0</version>
+                <configuration>
+                    <release>21</release>
+                </configuration>
+            </plugin>
         </plugins>
     </build>
-
     <dependencies>
         <dependency>
             <groupId>edu.byu.cs240</groupId>
@@ -97,13 +100,28 @@
             <scope>test</scope>
         </dependency>
         <dependency>
+            <groupId>org.glassfish.tyrus</groupId>
+            <artifactId>tyrus-server</artifactId>
+            <version>1.15</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish.tyrus</groupId>
+            <artifactId>tyrus-container-servlet</artifactId>
+            <version>1.15</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-simple</artifactId>
+            <version>1.7.36</version>
+        </dependency>
+        <dependency>
             <groupId>edu.byu.cs240</groupId>
             <artifactId>passoff-dependencies</artifactId>
             <version>1.0</version>
             <scope>system</scope>
-            <systemPath>${pom.basedir}/lib/passoff-dependencies.jar</systemPath>
+            <systemPath>/Users/ryanmortenson/Documents/CS240/Chess/chess/server/lib/passoff-dependencies.jar</systemPath>
         </dependency>
     </dependencies>
-
-
 </project>
