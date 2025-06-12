@@ -35,7 +35,7 @@ public class ConnectionManager {
 
     public void broadcast(int gameID, String excludeUsername, ServerMessage message) throws IOException {
         var gameMap = gameConnections.get(gameID);
-        if (gameMap == null) return;
+        if (gameMap == null) {return;}
 
         var removeList = new ArrayList<String>();
         for (var entry : gameMap.entrySet()) {

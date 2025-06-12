@@ -10,7 +10,7 @@ import service.GameService;
 import service.DBService;
 import service.exceptions.UnauthorizedException;
 import spark.Spark;
-import server.websocket.WebSocketHandler;
+
 
 import java.util.Map;
 
@@ -73,11 +73,11 @@ public class Server {
             String path   = req.pathInfo();
             String method = req.requestMethod();
 
-            if ("POST".equals(method)   && "/clear".equals(path))    return;
-            if ("DELETE".equals(method) && "/db".equals(path))       return;
-            if ("POST".equals(method)   && "/user".equals(path))     return;
-            if ("POST".equals(method)   && "/session".equals(path))  return;
-            if ("DELETE".equals(method) && "/session".equals(path))  return;
+            if ("POST".equals(method)   && "/clear".equals(path)) {return;}
+            if ("DELETE".equals(method) && "/db".equals(path)) {return;}
+            if ("POST".equals(method)   && "/user".equals(path)) {return;}
+            if ("POST".equals(method)   && "/session".equals(path)) {return;}
+            if ("DELETE".equals(method) && "/session".equals(path)) {return;}
 
 
             String token = req.headers("AuthToken");

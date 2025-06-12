@@ -10,14 +10,14 @@ import websocket.messages.ErrorMessage;
 import websocket.messages.LoadGameMessage;
 import websocket.messages.NotificationMessage;
 import websocket.messages.ServerMessage;
-import java.util.Set;
-import java.util.HashSet;
-import java.util.stream.Collectors;
 
 import static ui.EscapeSequences.*;
 
 import java.io.IOException;
+import java.util.HashSet;
 import java.util.Scanner;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 public class GameplayClient {
     private final String baseUrl;
@@ -28,7 +28,7 @@ public class GameplayClient {
     private final int gameID;
     private boolean gameOver = false;
 
-    //for highlight
+    // for highlight
     private ChessPosition selectedPosition = null;
     private Set<ChessPosition> highlightPositions = new HashSet<>();
 
@@ -41,85 +41,94 @@ public class GameplayClient {
         this.ws = new WebSocketFacade(baseUrl, this::handleServerMessage);
     }
 
-
     public void run() throws IOException {
         try {
             Scanner scanner = new Scanner(System.in);
             displayHelp();
             ws.sendConnect(authToken, gameID);
-            while (true) {
+            printPrompt();
 
+            while (true) {
                 if (gameOver) {
-                    System.out.println("Game over. Returning to menu");
+                    System.out.println("Game over. Returning to menu.");
                     break;
                 }
 
                 String line = scanner.nextLine().trim();
-                if (line.isEmpty()) {continue;}
+                if (line.isEmpty()) {
+                    printPrompt();
+                    continue;
+                }
 
-                //parse the commands
                 String[] parts = line.split("\\s+");
                 String cmd = parts[0].toLowerCase();
 
                 switch (cmd) {
-                    case "help" -> displayHelp();
-                    case "redraw" -> redrawBoard(game);
-                    case "move" -> {
-                        if (parts.length < 3) {
-                            System.out.println("Usage: move <from> <to>");
-                            break;
-                        }
-                        try {
-                            ChessPosition from = parsePosition(parts[1]);
-                            ChessPosition to = parsePosition(parts[2]);
-                            ws.sendMakeMove(authToken, gameID, new ChessMove(from, to, null));
-                        } catch (Exception e) {
-                            System.out.println(SET_TEXT_COLOR_YELLOW + "Error: illegal move" + RESET_TEXT_COLOR);
-                            printPrompt();
-                        }
-                    }
-                    case "highlight" -> {
-                        if (parts.length < 2) {
-                            System.out.println("Usage: highlight <position>");
-                            break;
-                        }
-                        try {
-                            ChessPosition pos = parsePosition(parts[1]);
-                            highlightLegalMoves(game, pos);
-                        } catch (Exception e) {
-                            System.out.println(SET_TEXT_COLOR_YELLOW + "Error: invalid position" + RESET_TEXT_COLOR);
-                            printPrompt();
-                        }
-                    }
-                    case "resign" -> {
+                    case "help"      -> { displayHelp(); }
+                    case "redraw"    -> { redrawBoard(game); }
+                    case "move"      -> handleMove(parts);
+                    case "highlight" -> handleHighlight(parts);
+                    case "resign"    -> {
                         ws.sendResign(authToken, gameID);
                         System.out.println(SET_TEXT_COLOR_YELLOW + "You resigned." + RESET_TEXT_COLOR);
                         return;
                     }
-                    case "leave" -> {
+                    case "leave"     -> {
                         ws.sendLeave(authToken, gameID);
                         System.out.println(SET_TEXT_COLOR_YELLOW + "Leaving game." + RESET_TEXT_COLOR);
                         return;
                     }
-                    default -> {
-                        System.out.println(SET_TEXT_COLOR_YELLOW + "Unknown command" + RESET_TEXT_COLOR);
-                        printPrompt();
-                    }
+                    default          -> System.out.println(SET_TEXT_COLOR_YELLOW + "Unknown command" + RESET_TEXT_COLOR);
                 }
+
+                printPrompt();
             }
         } finally {
             ws.close();
         }
     }
 
+
+    private void handleMove(String[] parts) {
+        if (parts.length < 3) {
+            System.out.println("Usage: move <from> <to>");
+            return;
+        }
+        try {
+            ChessPosition from = parsePosition(parts[1]);
+            ChessPosition to   = parsePosition(parts[2]);
+            ws.sendMakeMove(authToken, gameID, new ChessMove(from, to, null));
+        } catch (Exception e) {
+            System.out.println(SET_TEXT_COLOR_YELLOW + "Error: illegal move" + RESET_TEXT_COLOR);
+        }
+    }
+
+
+    private void handleHighlight(String[] parts) {
+        if (parts.length < 2) {
+            System.out.println("Usage: highlight <position>");
+            return;
+        }
+        try {
+            ChessPosition pos = parsePosition(parts[1]);
+            selectedPosition = pos;
+            highlightPositions = game.validMoves(pos).stream()
+                    .map(ChessMove::getEndPosition)
+                    .collect(Collectors.toSet());
+
+            redrawBoard(game);
+        } catch (Exception e) {
+            System.out.println(SET_TEXT_COLOR_YELLOW + "Error: invalid position" + RESET_TEXT_COLOR);
+        }
+    }
+
     private ChessPosition parsePosition(String input) {
         String s = input.toLowerCase();
-        if (s.length() != 2) throw new IllegalArgumentException("Invalid position: " + input);
+        if (s.length() != 2) {throw new IllegalArgumentException("Invalid position: " + input);}
         int col = s.charAt(0) - 'a' + 1;
         int row = Character.getNumericValue(s.charAt(1));
         return new ChessPosition(row, col);
     }
-
 
     private void displayHelp() {
         System.out.println(SET_TEXT_COLOR_CYAN + "Available commands:" + RESET_TEXT_COLOR);
@@ -129,29 +138,15 @@ public class GameplayClient {
         System.out.println("  highlight - highlight legal moves for a piece (e.g. highlight e2)");
         System.out.println("  resign    - resign the game");
         System.out.println("  leave     - leave the game");
-        printPrompt();
     }
 
-
     private void redrawBoard(ChessGame game) {
+        selectedPosition = null;
+        highlightPositions.clear();
+
         String[][] board = buildBoardMatrix(game);
         printBoard(board);
     }
-
-
-    private void highlightLegalMoves(ChessGame game, ChessPosition pos) {
-        selectedPosition = pos;
-        highlightPositions = game.validMoves(pos).stream()
-                .map(ChessMove::getEndPosition)
-                .collect(Collectors.toSet());
-
-        redrawBoard(game);
-        printPrompt();
-        selectedPosition = null;
-        highlightPositions.clear();
-    }
-
-
 
     private String[][] buildBoardMatrix(ChessGame game) {
         String[][] board = new String[9][9];
@@ -161,20 +156,20 @@ public class GameplayClient {
                 if (piece == null) {
                     board[r][c] = " ";
                 } else {
-                    String symbol;
-                    switch (piece.getPieceType()) {
-                        case KING   -> symbol = piece.getTeamColor() == ChessGame.TeamColor.WHITE ? WHITE_KING   : BLACK_KING;
-                        case QUEEN  -> symbol = piece.getTeamColor() == ChessGame.TeamColor.WHITE ? WHITE_QUEEN  : BLACK_QUEEN;
-                        case ROOK   -> symbol = piece.getTeamColor() == ChessGame.TeamColor.WHITE ? WHITE_ROOK   : BLACK_ROOK;
-                        case BISHOP -> symbol = piece.getTeamColor() == ChessGame.TeamColor.WHITE ? WHITE_BISHOP : BLACK_BISHOP;
-                        case KNIGHT -> symbol = piece.getTeamColor() == ChessGame.TeamColor.WHITE ? WHITE_KNIGHT : BLACK_KNIGHT;
-                        case PAWN   -> symbol = piece.getTeamColor() == ChessGame.TeamColor.WHITE ? WHITE_PAWN   : BLACK_PAWN;
-                        default     -> symbol = "  ";
-                    }
-                    String colored = piece.getTeamColor() == ChessGame.TeamColor.WHITE
-                            ? SET_TEXT_COLOR_WHITE + symbol + RESET_TEXT_COLOR
-                            : SET_TEXT_COLOR_BLACK + symbol + RESET_TEXT_COLOR;
-                    board[r][c] = colored;
+                    String symbol = switch (piece.getPieceType()) {
+                        case KING   -> piece.getTeamColor() == ChessGame.TeamColor.WHITE ? WHITE_KING   : BLACK_KING;
+                        case QUEEN  -> piece.getTeamColor() == ChessGame.TeamColor.WHITE ? WHITE_QUEEN  : BLACK_QUEEN;
+                        case ROOK   -> piece.getTeamColor() == ChessGame.TeamColor.WHITE ? WHITE_ROOK   : BLACK_ROOK;
+                        case BISHOP -> piece.getTeamColor() == ChessGame.TeamColor.WHITE ? WHITE_BISHOP : BLACK_BISHOP;
+                        case KNIGHT -> piece.getTeamColor() == ChessGame.TeamColor.WHITE ? WHITE_KNIGHT : BLACK_KNIGHT;
+                        case PAWN   -> piece.getTeamColor() == ChessGame.TeamColor.WHITE ? WHITE_PAWN   : BLACK_PAWN;
+                        default     -> "  ";
+                    };
+                    board[r][c] = (piece.getTeamColor() == ChessGame.TeamColor.WHITE
+                            ? SET_TEXT_COLOR_WHITE
+                            : SET_TEXT_COLOR_BLACK)
+                            + symbol
+                            + RESET_TEXT_COLOR;
                 }
             }
         }
@@ -201,8 +196,9 @@ public class GameplayClient {
 
     private void printRank(String[][] board, int rank, boolean flip) {
         int display = flip ? 9 - rank : rank;
-        StringBuilder line = new StringBuilder();
+        var line = new StringBuilder();
 
+        // left label
         line.append(SET_BG_COLOR_BLUE).append(SET_TEXT_COLOR_BLACK).append(SET_TEXT_BOLD)
                 .append(" ").append(display).append(" ")
                 .append(RESET_TEXT_COLOR).append(RESET_BG_COLOR).append(RESET_TEXT_BOLD_FAINT);
@@ -211,10 +207,9 @@ public class GameplayClient {
             int c = flip ? 9 - file : file;
             int r = flip ? 9 - rank : rank;
 
-            boolean isSelected = selectedPosition != null
+            boolean isSelected   = selectedPosition != null
                     && selectedPosition.getRow() == r
                     && selectedPosition.getColumn() == c;
-
             boolean isHighlighted = highlightPositions.contains(new ChessPosition(r, c));
 
             String bg;
@@ -235,6 +230,7 @@ public class GameplayClient {
                     .append(RESET_BG_COLOR);
         }
 
+        // right label
         line.append(SET_BG_COLOR_BLUE).append(SET_TEXT_COLOR_BLACK).append(SET_TEXT_BOLD)
                 .append(" ").append(display).append(" ")
                 .append(RESET_TEXT_COLOR).append(RESET_BG_COLOR).append(RESET_TEXT_BOLD_FAINT);
@@ -242,10 +238,7 @@ public class GameplayClient {
         System.out.println(line.toString());
     }
 
-
-
     private void handleServerMessage(ServerMessage msg) {
-
         System.out.println();
 
         switch (msg.getServerMessageType()) {
@@ -269,9 +262,11 @@ public class GameplayClient {
             case ERROR -> {
                 var err = (ErrorMessage) msg;
                 System.out.println(SET_TEXT_COLOR_RED + err.errorMessage + RESET_TEXT_COLOR);
+
                 if (err.errorMessage.toLowerCase().contains("already over")) {
                     gameOver = true;
                 }
+
                 printPrompt();
             }
         }
