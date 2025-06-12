@@ -81,6 +81,8 @@ public class GameHandler {
 
         try {
             ListGamesResult result = gameService.listGames(token);
+            // get rid of games that are already over
+            result.games().removeIf(g -> g.game().isGameOver());
             res.status(200);
             return gson.toJson(result);
 

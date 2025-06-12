@@ -32,20 +32,17 @@ public class GameplayClient {
         this.game        = new ChessGame();
         this.perspective = perspective;
         this.ws = new WebSocketFacade(baseUrl, this::handleServerMessage);
-        ws.sendConnect(authToken, gameID);
-        this.ws.sendConnect(authToken, gameID);
     }
 
 
     public void run() throws IOException {
         try {
             Scanner scanner = new Scanner(System.in);
-            redrawBoard(game);
             displayHelp();
+            ws.sendConnect(authToken, gameID);
             while (true) {
-                System.out.print(SET_TEXT_COLOR_CYAN + "Game >>> " + RESET_TEXT_COLOR);
                 String line = scanner.nextLine().trim();
-                if (line.isEmpty()) continue;
+                if (line.isEmpty()) {continue;}
 
                 //parse the commands
                 String[] parts = line.split("\\s+");
@@ -65,6 +62,7 @@ public class GameplayClient {
                             ws.sendMakeMove(authToken, gameID, new ChessMove(from, to, null));
                         } catch (Exception e) {
                             System.out.println(SET_TEXT_COLOR_YELLOW + "Error: illegal move" + RESET_TEXT_COLOR);
+                            printPrompt();
                         }
                     }
                     case "highlight" -> {
@@ -77,6 +75,7 @@ public class GameplayClient {
                             highlightLegalMoves(game, pos);
                         } catch (Exception e) {
                             System.out.println(SET_TEXT_COLOR_YELLOW + "Error: invalid position" + RESET_TEXT_COLOR);
+                            printPrompt();
                         }
                     }
                     case "resign" -> {
@@ -89,7 +88,10 @@ public class GameplayClient {
                         System.out.println(SET_TEXT_COLOR_YELLOW + "Leaving game." + RESET_TEXT_COLOR);
                         return;
                     }
-                    default -> System.out.println(SET_TEXT_COLOR_YELLOW + "Unknown command" + RESET_TEXT_COLOR);
+                    default -> {
+                        System.out.println(SET_TEXT_COLOR_YELLOW + "Unknown command" + RESET_TEXT_COLOR);
+                        printPrompt();
+                    }
                 }
             }
         } finally {
@@ -114,6 +116,7 @@ public class GameplayClient {
         System.out.println("  highlight - highlight legal moves for a piece (e.g. highlight e2)");
         System.out.println("  resign    - resign the game");
         System.out.println("  leave     - leave the game");
+        printPrompt();
     }
 
 
@@ -139,6 +142,7 @@ public class GameplayClient {
         }
 
         printBoard(board);
+        printPrompt();
     }
 
     private String[][] buildBoardMatrix(ChessGame game) {
@@ -208,20 +212,30 @@ public class GameplayClient {
     }
 
     private void handleServerMessage(ServerMessage msg) {
+
+        System.out.println();
+
         switch (msg.getServerMessageType()) {
             case LOAD_GAME -> {
                 var load = (LoadGameMessage) msg;
                 this.game = load.getGame().game();
                 redrawBoard(game);
+                printPrompt();
             }
             case NOTIFICATION -> {
                 var note = (NotificationMessage) msg;
                 System.out.println(SET_TEXT_COLOR_YELLOW + note.message + RESET_TEXT_COLOR);
+                printPrompt();
             }
             case ERROR -> {
                 var err = (ErrorMessage) msg;
                 System.out.println(SET_TEXT_COLOR_RED + err.errorMessage + RESET_TEXT_COLOR);
+                printPrompt();
             }
         }
+    }
+
+    private void printPrompt() {
+        System.out.print(SET_TEXT_COLOR_CYAN + "Game >>> " + RESET_TEXT_COLOR);
     }
 }

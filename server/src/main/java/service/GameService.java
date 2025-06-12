@@ -1,5 +1,6 @@
 package service;
 
+import chess.ChessGame;
 import service.exceptions.AlreadyTakenException;
 import service.exceptions.NotFoundException;
 import service.exceptions.UnauthorizedException;
@@ -37,7 +38,7 @@ public class GameService {
                 null,
                 null,
                 request.gameName(),
-                null);
+                new ChessGame());
 
         int id = gameDao.createGame(template);
         return new CreateGameResult(id);
