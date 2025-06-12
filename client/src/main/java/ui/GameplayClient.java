@@ -10,11 +10,13 @@ import websocket.messages.ErrorMessage;
 import websocket.messages.LoadGameMessage;
 import websocket.messages.NotificationMessage;
 import websocket.messages.ServerMessage;
+import java.util.Set;
+import java.util.HashSet;
+import java.util.stream.Collectors;
 
 import static ui.EscapeSequences.*;
 
 import java.io.IOException;
-import java.util.Collection;
 import java.util.Scanner;
 
 public class GameplayClient {
@@ -25,6 +27,10 @@ public class GameplayClient {
     private WebSocketFacade ws;
     private final int gameID;
     private boolean gameOver = false;
+
+    //for highlight
+    private ChessPosition selectedPosition = null;
+    private Set<ChessPosition> highlightPositions = new HashSet<>();
 
     public GameplayClient(String baseUrl, String authToken, int gameID, String perspective) throws ResponseException {
         this.baseUrl     = baseUrl;
@@ -134,23 +140,18 @@ public class GameplayClient {
 
 
     private void highlightLegalMoves(ChessGame game, ChessPosition pos) {
-        String[][] board = buildBoardMatrix(game);
-        Collection<ChessMove> moves = game.validMoves(pos);
+        selectedPosition = pos;
+        highlightPositions = game.validMoves(pos).stream()
+                .map(ChessMove::getEndPosition)
+                .collect(Collectors.toSet());
 
-        int sr = pos.getRow();
-        int sc = pos.getColumn();
-        board[sr][sc] = SET_BG_COLOR_YELLOW + board[sr][sc] + RESET_BG_COLOR;
-
-        for (ChessMove m : moves) {
-            ChessPosition end = m.getEndPosition();
-            int er = end.getRow();
-            int ec = end.getColumn();
-            board[er][ec] = SET_BG_COLOR_GREEN + board[er][ec] + RESET_BG_COLOR;
-        }
-
-        printBoard(board);
+        redrawBoard(game);
         printPrompt();
+        selectedPosition = null;
+        highlightPositions.clear();
     }
+
+
 
     private String[][] buildBoardMatrix(ChessGame game) {
         String[][] board = new String[9][9];
@@ -201,22 +202,47 @@ public class GameplayClient {
     private void printRank(String[][] board, int rank, boolean flip) {
         int display = flip ? 9 - rank : rank;
         StringBuilder line = new StringBuilder();
+
         line.append(SET_BG_COLOR_BLUE).append(SET_TEXT_COLOR_BLACK).append(SET_TEXT_BOLD)
                 .append(" ").append(display).append(" ")
                 .append(RESET_TEXT_COLOR).append(RESET_BG_COLOR).append(RESET_TEXT_BOLD_FAINT);
+
         for (int file = 1; file <= 8; file++) {
             int c = flip ? 9 - file : file;
             int r = flip ? 9 - rank : rank;
-            boolean dark = ((r + c) % 2 == 0);
-            String bg = dark ? SET_BG_COLOR_DARK_GREY : SET_BG_COLOR_LIGHT_GREY;
-            line.append(bg).append(" ").append(board[r][c]).append(" ")
-                    .append(RESET_TEXT_COLOR).append(RESET_BG_COLOR);
+
+            boolean isSelected = selectedPosition != null
+                    && selectedPosition.getRow() == r
+                    && selectedPosition.getColumn() == c;
+
+            boolean isHighlighted = highlightPositions.contains(new ChessPosition(r, c));
+
+            String bg;
+            if (isSelected) {
+                bg = SET_BG_COLOR_YELLOW;
+            } else if (isHighlighted) {
+                bg = SET_BG_COLOR_GREEN;
+            } else {
+                boolean dark = ((r + c) % 2 == 0);
+                bg = dark ? SET_BG_COLOR_DARK_GREY : SET_BG_COLOR_LIGHT_GREY;
+            }
+
+            line.append(bg)
+                    .append(" ")
+                    .append(board[r][c])
+                    .append(" ")
+                    .append(RESET_TEXT_COLOR)
+                    .append(RESET_BG_COLOR);
         }
+
         line.append(SET_BG_COLOR_BLUE).append(SET_TEXT_COLOR_BLACK).append(SET_TEXT_BOLD)
                 .append(" ").append(display).append(" ")
                 .append(RESET_TEXT_COLOR).append(RESET_BG_COLOR).append(RESET_TEXT_BOLD_FAINT);
+
         System.out.println(line.toString());
     }
+
+
 
     private void handleServerMessage(ServerMessage msg) {
 
